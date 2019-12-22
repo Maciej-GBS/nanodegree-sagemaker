@@ -1,3 +1,6 @@
 [submodule "sagemaker-deployment"]
 	path = sagemaker-deployment
 	url = https://github.com/Maciej-GBS/sagemaker-deployment.git
+[submodule "ML_SageMaker_Studies"]
+	path = ML_SageMaker_Studies
+	url = https://github.com/Maciej-GBS/ML_SageMaker_Studies.git
