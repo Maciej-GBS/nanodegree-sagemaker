@@ -14,7 +14,7 @@ My personal experience was to work on trading bots myself for a few months. I ha
 ## Problem statement
 We want to predict the price of the EURUSD ratio and NASDAQ stock. This is a timeseries forecasting problem. The goal is to create a script that will forecast future values basing on input provided as starting point. Then a web application will serve information live by downloading information from third party services.
 
-## Database and inputs
+## Dataset and inputs
 Our data will consist of price candles entries with columns:
 - datetime -- date and time of the price candle opening (may be split into separate columns)
 - open -- price at the candle entry time
@@ -53,7 +53,7 @@ One way to solve this problem is to calculate MA indicator with a length paramet
 
 Input can consist of a number of recent price values. Controlled by a hyperparameter with minimum 3 candles.
 
-Best model architecture has to be expermientally discovered. I will start with LSTM with 1 unit to predict just next value of the close price.
+Best model architecture has to be expermientally discovered. I will start with LSTM with 1 unit to predict just next value of the close price. It may prove that more units allow better prediction once the forecast length increases.
 
 %---------------------------------------------------------
 # Documentation
