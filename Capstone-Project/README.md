@@ -11,4 +11,4 @@ Can be found in *proposal* directory.
 
 %---------------------------------------------------------
 # Documentation
-
+Stored in *documentation* directory.
