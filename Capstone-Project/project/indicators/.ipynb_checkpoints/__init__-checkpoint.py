@@ -64,19 +64,19 @@ def RSI(data, period=14):
     Calculates RSI oscillator. Requires Momentum.
     Column: RSI
     """
-    for i in range(0,period):
-        chunk = np.array(data.iloc[0:i]['Momentum'])
+    def process_chunk(chunk, length):
         # Average Gain
-        AG = chunk[chunk > 0].sum() / period
+        AG = (chunk > 0).sum() / length
         # Average Loss
-        AL = chunk[chunk < 0].sum() / period
-        data.iloc[i, data.columns.get_loc('RSI')] = 100.0 - 100.0 / (1 + AG / AL)
+        AL = (chunk < 0).sum() / length
+        RS = AG / (AL + 1e-12)
+        data.iloc[i, data.columns.get_loc('RSI')] = 100.0 - 100.0 / (1 + RS)
+        
+    for i in range(0,period):
+        change = np.array(data.iloc[0:i]['Momentum'])
+        process_chunk(change, i+1)
     
     for i in range(period,len(data)):
-        chunk = np.array(data.iloc[i-period:i]['Momentum'])
-        # Average Gain
-        AG = chunk[chunk > 0].sum() / period
-        # Average Loss
-        AL = chunk[chunk < 0].sum() / period
-        data.iloc[i, data.columns.get_loc('RSI')] = 100.0 - 100.0 / (1 + AG / AL)
+        change = np.array(data.iloc[i-period:i]['Momentum'])
+        process_chunk(change, period)
     return data
