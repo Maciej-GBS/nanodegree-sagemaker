@@ -3,3 +3,9 @@ Here one can find all project notebooks and source code.
 
 ## indicators
 Module for applying various indicators on the dataset.
+
+Implements:
+- SMA
+- EMA
+- Momentum
+- RSI
