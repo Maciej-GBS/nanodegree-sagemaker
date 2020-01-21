@@ -1,0 +1,118 @@
+\documentclass[a4paper,12pt]{article}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{indentfirst}
+\usepackage[top=2.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm]{geometry}
+\usepackage{amsmath}
+\usepackage{hyperref}
+
+\title{ML Nanodegree Capstone Project\\Investment and Trading application}
+\author{Maciej Nalepa}
+\date{2020 January}
+\begin{document}
+\maketitle
+
+\part{Definition}
+\section*{Project Overview}
+Knowing the future of a market stock price is a very valuable information about risk of investment and is commonly pursued because of potentially infinite profits.
+
+Currency ratio and stock markets forecasting based on technical analysis can be easily implemented in a script thanks to timeseries prediction nature of the problem. Price and volume are publicly accessible and can be used to train a model aiming to output the most likely future price.
+
+In this project I have explored different Machine Learning techniques to find the best predictor of stock market values.
+
+Project was inspired by personal experience in development of trading algorithms.
+
+\section*{Problem Statement}
+We want to predict the price of EURUSD ratio and NASDAQ stock. It is a timeseries forecasting problem. The goal is to create a script that will forecast future values basing on input provided as a starting point. Then a web application will serve forecasts live by downloading information from third party services.
+
+\section*{Evaluation Metrics}
+Because we are developing regression model a norm metric is required. For our purposes we will use Mean Squared Error (MSE) between predicted $y$ and actual values $\hat{y}$ (\ref{MSE}). Model loss will be calculated from validation set that will be less or equal 20\% of the actual values that a model tried to predict from a starting point. This means that up to 40\% tail of the dataset is reserved only for evaluation during training and will not be fed as input.
+
+For final model testing the actual values from validation set will be included as input to predict test actual values.
+\begin{equation}
+	\label{MSE}
+	MSE = \frac{1}{2} \left( y - \hat{y} \right)^2
+\end{equation}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\part{Analysis}
+\section{Data Exploration}
+\section{Visualization}
+\section{Algorithms \& Techniques}
+\subsection{Data Feeding}
+\section{Benchmark Model}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\part{Methodology}
+\section{Data Preprocessing}
+\section{Implementation}
+\section{Refinement}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\part{Results}
+\section{Model Evaluation and Validation}
+\section{Justification}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\part{Conclusion}
+\section{Reflection}
+\section{Further Improvements}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newpage
+\begin{thebibliography}{15}
+\bibitem{MAmodel}
+Aishwarya Singh, Analytics Vidhya
+\texttt{\href{https://www.analyticsvidhya.com/blog/2018/10/predicting-stock-price-machine-learningnd-deep-learning-techniques-python/}{analyticsvidhya.com}}
+
+\bibitem{TowardsData}
+\texttt{\href{https://towardsdatascience.com/machine-learning-techniques-applied-to-stock-price-prediction-6c1994da8001}{towardsdatascience.com}}
+
+\bibitem{Khan}
+\texttt{\href{https://www.khanacademy.org/economics-finance-domain/core-finance/stock-and-bonds}{khanacademy.com}}
+
+\bibitem{Oscillators}
+\texttt{\href{https://www.fxcm.com/uk/insights/learn-forex-oscillators-and-momentum-indicators/}{fxcm.com}}
+
+\bibitem{Yahoo}
+Yahoo! Finance
+\texttt{\url{https://finance.yahoo.com}}
+
+\bibitem{HistData}
+HistData
+\texttt{\url{http://histdata.com}}
+\end{thebibliography}
+
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
