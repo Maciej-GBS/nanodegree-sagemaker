@@ -1,0 +1,18 @@
+\babel@toc {english}{}
+\contentsline {part}{I\hspace {1em}Definition}{1}{part.1}
+\contentsline {part}{II\hspace {1em}Analysis}{2}{part.2}
+\contentsline {section}{\numberline {1}Data Exploration}{2}{section.1}
+\contentsline {section}{\numberline {2}Visualization}{3}{section.2}
+\contentsline {section}{\numberline {3}Algorithms \& Techniques}{3}{section.3}
+\contentsline {subsection}{\numberline {3.1}Data Feeding}{3}{subsection.3.1}
+\contentsline {section}{\numberline {4}Benchmark Model}{3}{section.4}
+\contentsline {part}{III\hspace {1em}Methodology}{3}{part.3}
+\contentsline {section}{\numberline {5}Data Preprocessing}{3}{section.5}
+\contentsline {section}{\numberline {6}Implementation}{3}{section.6}
+\contentsline {section}{\numberline {7}Refinement}{3}{section.7}
+\contentsline {part}{IV\hspace {1em}Results}{3}{part.4}
+\contentsline {section}{\numberline {8}Model Evaluation and Validation}{3}{section.8}
+\contentsline {section}{\numberline {9}Justification}{3}{section.9}
+\contentsline {part}{V\hspace {1em}Conclusion}{3}{part.5}
+\contentsline {section}{\numberline {10}Reflection}{3}{section.10}
+\contentsline {section}{\numberline {11}Further Improvements}{3}{section.11}
