@@ -10,7 +10,7 @@ Sources:
 - [http://histdata.com](histdata.com) -- historical data
 
 ### documentation
-PDF and LaTeX source of project documentation.
+PDF and LaTeX source of project documentation (project report).
 
 ### project
 Source files of the project. More details in `project/README.md`.
