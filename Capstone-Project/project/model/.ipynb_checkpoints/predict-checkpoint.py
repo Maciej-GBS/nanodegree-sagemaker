@@ -24,12 +24,11 @@ def predict_fn(input_data, model):
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
-    review_vector = review_to_words(input_data)
-    data_X, data_len = convert_and_pad(model.word_dict, review_vector)
-
+    # TODO: use yfinance to collect data
     data_pack = np.hstack((data_len, data_X))
     data_pack = data_pack.reshape(1, -1)
     
+    # TODO; use correct shaping, an util maybe? this problem is not here only
     data = torch.from_numpy(data_pack)
     data = data.to(device)
 

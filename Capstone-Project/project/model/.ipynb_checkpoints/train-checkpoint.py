@@ -1,4 +1,5 @@
 import argparse
+import os
 import json
 import sagemaker_containers
 import numpy as np
@@ -6,11 +7,12 @@ import pandas as pd
 import torch
 import torch.utils.data
 
-from model import *
+from model import LSTMRegressor
 
 def _get_train_data_loader(batch_size, training_dir):
     train_data = pd.read_csv(os.path.join(training_dir, "train.csv"), header=None, names=None)
 
+    # ALL WRONG TODO: fix this
     train_y = torch.from_numpy(train_data[[0]].values).float().squeeze()
     train_X = torch.from_numpy(train_data.drop([0], axis=1).values).long()
 
@@ -60,12 +62,8 @@ if __name__ == '__main__':
     parser.add_argument('--seed', type=int, default=1, metavar='S',
                         help='random seed (default: 1)')
     # Model Parameters
-    parser.add_argument('--embedding_dim', type=int, default=32, metavar='N',
-                        help='size of the word embeddings (default: 32)')
-    parser.add_argument('--hidden_dim', type=int, default=100, metavar='N',
-                        help='size of the hidden dimension (default: 100)')
-    parser.add_argument('--vocab_size', type=int, default=5000, metavar='N',
-                        help='size of the vocabulary (default: 5000)')
+    parser.add_argument('--my_dim', type=int, default=100, metavar='N',
+                        help='size of the my dimension (default: 100)')
     # SageMaker Parameters
     parser.add_argument('--hosts', type=list, default=json.loads(os.environ['SM_HOSTS']))
     parser.add_argument('--current-host', type=str, default=os.environ['SM_CURRENT_HOST'])
