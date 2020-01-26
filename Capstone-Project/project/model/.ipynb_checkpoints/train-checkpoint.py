@@ -7,7 +7,7 @@ import pandas as pd
 import torch
 import torch.utils.data
 
-from model import LSTMRegressor
+from model import *
 
 def _get_train_data_loader(batch_size, training_dir):
     train_data = pd.read_csv(os.path.join(training_dir, "train.csv"), header=None, names=None)
@@ -31,8 +31,8 @@ def train(model, train_loader, epochs, optimizer, loss_fn, device):
     loss_fn      - The loss function used for training.
     device       - Where the model and data should be loaded (cuda or cpu).
     """
+    model.train()
     for epoch in range(1, epochs + 1):
-        model.train()
         total_loss = 0
         for batch in train_loader:         
             batch_X, batch_y = batch
@@ -42,9 +42,9 @@ def train(model, train_loader, epochs, optimizer, loss_fn, device):
             y = model(batch_X)
             loss = loss_fn(y, batch_y)
             loss.backward()
-            optimizer.step()
 
-            #Reset gradients
+            # Update weights and reset gradients
+            optimizer.step()
             optimizer.zero_grad()
 
             total_loss += loss.data.item()
