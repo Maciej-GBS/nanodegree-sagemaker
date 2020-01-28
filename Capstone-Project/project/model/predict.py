@@ -12,6 +12,7 @@ def input_fn(serialized_input_data, content_type):
     if content_type == 'text/plain':
         print("> Received input symbol")
         data = serialized_input_data.decode('utf-8')
+        # TODO: fetch data from yfinance
         return data
     raise Exception('Requested unsupported ContentType in content_type: ' + content_type)
 

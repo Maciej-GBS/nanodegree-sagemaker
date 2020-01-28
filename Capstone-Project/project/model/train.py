@@ -9,19 +9,47 @@ import torch.utils.data
 
 from model import *
 
-def _get_train_data_loader(batch_size, training_dir):
-    train_data = pd.read_csv(os.path.join(training_dir, "train.csv"), header=None, names=None)
+class SlidingWindowDataset(torch.utils.data.IterableDataset):
+    """
+    Iterable Dataset from numpy array data containing history of market.
+    Slides a window over the dataset, ensures that output has the shape of
+    (window_size, data_columns)
+    """
+    def __init__(self, data, window_size):
+        super().__init__()
+        self.timeseries = data
+        self.window = window_size
+        self.length = len(self.timeseries)
+        
+    def __next__(self):
+        first = self._start + self._n
+        last = self._n + self.window + self._start
+        if last > self._end:
+            raise StopIteration
+        self._n += 1
+        return self.timeseries[first:last]
+        
+    def __iter__(self):
+        worker_info = torch.utils.data.get_worker_info()
+        if worker_info is None: # single-process data loading, return the full iterator
+            self._start = 0
+            self._end = self.length
+        else: # split if inside a worker process
+            per_worker = int(math.ceil(self.length / float(worker_info.num_workers)))
+            worker_id = worker_info.id
+            self._start = worker_id * per_worker
+            self._end = min(start + per_worker, self.length)
+        # window looks forward so _end has to shrinked
+        self._end -= self.window
+        self._n = 0
+        return self
 
-    # ALL WRONG TODO: fix this
-    train_y = torch.from_numpy(train_data[[0]].values).float().squeeze()
-    train_X = torch.from_numpy(train_data.drop([0], axis=1).values).long()
-
-    train_ds = torch.utils.data.TensorDataset(train_X, train_y)
-
+def _get_train_data_loader(batch_size, sliding_window, pair, training_dir):
+    train_data = pd.read_csv(os.path.join(training_dir, "train_{}.csv".format(pair)), header=None, names=None)
+    train_ds = SlidingWindowDataset(train_data.values, sliding_window)
     return torch.utils.data.DataLoader(train_ds, batch_size=batch_size)
 
-
-def train(model, train_loader, epochs, optimizer, loss_fn, device):
+def train(model, outputs, train_loader, epochs, optimizer, loss_fn, device):
     """
     This is the training method that is called by the PyTorch training script. Parameters:
     model        - The PyTorch model that we wish to train.
@@ -35,12 +63,13 @@ def train(model, train_loader, epochs, optimizer, loss_fn, device):
     for epoch in range(1, epochs + 1):
         total_loss = 0
         for batch in train_loader:         
-            batch_X, batch_y = batch
-            batch_X = batch_X.to(device)
-            batch_y = batch_y.to(device)
+            # Slice dataset for input and output
+            batch_X = batch[:len(batch)-outputs].to(device)
+            batch_Y = batch[-outputs:].to(device)
             
             y = model(batch_X)
-            loss = loss_fn(y, batch_y)
+            # Use only Close price column
+            loss = loss_fn(y, batch_Y[:,3])
             loss.backward()
 
             # Update weights and reset gradients
@@ -48,8 +77,7 @@ def train(model, train_loader, epochs, optimizer, loss_fn, device):
             optimizer.zero_grad()
 
             total_loss += loss.data.item()
-        print("Epoch: {}, BCELoss: {}".format(epoch, total_loss / len(train_loader)))
-
+        print("Epoch: {}, Loss: {}".format(epoch, total_loss / len(train_loader)))
 
 if __name__ == '__main__':
     
@@ -59,11 +87,27 @@ if __name__ == '__main__':
                         help='input batch size for training (default: 512)')
     parser.add_argument('--epochs', type=int, default=10, metavar='N',
                         help='number of epochs to train (default: 10)')
-    parser.add_argument('--seed', type=int, default=1, metavar='S',
-                        help='random seed (default: 1)')
+    parser.add_argument('--seed', type=int, default=12, metavar='S',
+                        help='random seed (default: 12)')
     # Model Parameters
-    parser.add_argument('--my_dim', type=int, default=100, metavar='N',
-                        help='size of the my dimension (default: 100)')
+    parser.add_argument('--type', type=int, default=0, metavar='N',
+                        help='regressor type: 1-batch, 0-convolution (default: 0)')
+    parser.add_argument('--input-size', type=int, default=5, metavar='N',
+                        help='input window size (default: 5)')
+    parser.add_argument('--input-channels', type=int, default=9, metavar='N',
+                        help='expected dataset columns (default: 9)')
+    parser.add_argument('--lstm-layers', type=int, default=2, metavar='N',
+                        help='lstm layers used in the model (default: 2)')
+    parser.add_argument('--lstm-hidden', type=int, default=1, metavar='N',
+                        help='lstm layer output - horizon (default: 1)')
+    parser.add_argument('--dropout', type=int, default=0.2, metavar='P',
+                        help='probability to drop/zero input node (default: 0.2)')
+    parser.add_argument('--output-size', type=int, default=1, metavar='N',
+                        help='horizon, predictions forward (default: 1)')
+    parser.add_argument('--c-filters', type=int, default=2, metavar='N',
+                        help='convolution filters (default: 2)')
+    parser.add_argument('--c-kernel-size', type=int, default=3, metavar='N',
+                        help='convolution filter kernel size (default: 3)')
     # SageMaker Parameters
     parser.add_argument('--hosts', type=list, default=json.loads(os.environ['SM_HOSTS']))
     parser.add_argument('--current-host', type=str, default=os.environ['SM_CURRENT_HOST'])
@@ -78,19 +122,45 @@ if __name__ == '__main__':
 
     torch.manual_seed(args.seed)
 
-    train_loader = _get_train_data_loader(args.batch_size, args.data_dir)
-    model = LSTMRegressor(args.my_dim).to(device)
+    window_size = args.input_size + args.output_size
+    train_loader = _get_train_data_loader(args.batch_size, window_size, args.pair, args.data_dir)
+    
+    if args.type==1:
+        model = LSTMBatchRegressor(input_size=args.input_size,
+                                   input_channels=args.input_channels,
+                                   lstm_layers=args.lstm_layers,
+                                   lstm_hidden=args.lstm_hidden,
+                                   dropout=args.dropout,
+                                   output_size=args.output_size)
+    else:
+        model = LSTMRegressor(input_size=args.input_size,
+                              input_channels=args.input_channels,
+                              c_filters=args.c_filters,
+                              c_kernel_size=args.c_kernel_size,
+                              lstm_layers=args.lstm_layers,
+                              lstm_hidden=args.lstm_hidden,
+                              dropout=args.dropout,
+                              output_size=args.output_size)
+    model = model.to(device)
 
     # Train the model.
     optimizer = optim.Adam(model.parameters())
-    loss_fn = torch.nn.BCELoss() # TODO: NOPE!
-    train(model, train_loader, args.epochs, optimizer, loss_fn, device)
+    loss_fn = torch.nn.MSELoss(reduction='sum')
+    train(model, args.output_size, train_loader, args.epochs, optimizer, loss_fn, device)
 
     # Save the model parameters to model_info
     model_info_path = os.path.join(args.model_dir, 'model_info.pth')
     with open(model_info_path, 'wb') as f:
         model_info = {
-            'my_dim': args.my_dim
+            'type': args.type,
+            'input_size': args.input_size,
+            'input_channels': args.input_channels,
+            'lstm_layers': args.lstm_layers,
+            'lstm_hidden': args.lstm_hidden,
+            'dropout': args.dropout,
+            'output_size': args.output_size,
+            'c_filters': args.c_filters,
+            'c_kernel_size': args.c_kernel_size
         }
         torch.save(model_info, f)
 
