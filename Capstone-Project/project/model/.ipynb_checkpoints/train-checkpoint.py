@@ -1,7 +1,7 @@
 import argparse
 import os
 import json
-import sagemaker_containers
+#import sagemaker_containers # Module not found?
 import numpy as np
 import pandas as pd
 import torch
@@ -83,8 +83,8 @@ if __name__ == '__main__':
     
     parser = argparse.ArgumentParser()
     # Training Parameters
-    parser.add_argument('--batch-size', type=int, default=512, metavar='N',
-                        help='input batch size for training (default: 512)')
+    parser.add_argument('--batch-size', type=int, default=16, metavar='N',
+                        help='input batch size for training (default: 16)')
     parser.add_argument('--epochs', type=int, default=10, metavar='N',
                         help='number of epochs to train (default: 10)')
     parser.add_argument('--seed', type=int, default=12, metavar='S',

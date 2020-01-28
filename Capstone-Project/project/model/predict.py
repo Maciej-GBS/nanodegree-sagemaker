@@ -1,5 +1,5 @@
 import json
-import sagemaker_containers
+#import sagemaker_containers # Module not found?
 import numpy as np
 import pandas as pd
 import torch
@@ -12,7 +12,6 @@ def input_fn(serialized_input_data, content_type):
     if content_type == 'text/plain':
         print("> Received input symbol")
         data = serialized_input_data.decode('utf-8')
-        # TODO: fetch data from yfinance
         return data
     raise Exception('Requested unsupported ContentType in content_type: ' + content_type)
 
@@ -25,7 +24,9 @@ def predict_fn(input_data, model):
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
-    # TODO: use yfinance to collect data
+    # Here we convert input_data to our needs
+    
+    # TODO: fetch data from yfinance
     data_pack = np.hstack((data_len, data_X))
     data_pack = data_pack.reshape(1, -1)
     

@@ -1,4 +1,3 @@
-import sagemaker_containers
 import torch
 import torch.nn
 
