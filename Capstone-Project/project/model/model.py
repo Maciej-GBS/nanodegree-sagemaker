@@ -113,7 +113,7 @@ def model_fn(model_dir):
     print("> Model loading: Finished")
     return model
 
-class SlidingWindowDataset(torch.utils.data.IterableDataset):
+class SlidingWindowDataset(torch.utils.data.Dataset):
     """
     Iterable Dataset from numpy array data containing history of market.
     Slides a window over the dataset, ensures that output has the shape of
@@ -124,24 +124,12 @@ class SlidingWindowDataset(torch.utils.data.IterableDataset):
         self.timeseries = data
         self.window = window_size
         self.length = len(self.timeseries)
+    
+    def __len__(self):
+        return self.length - self.window + 1
         
-    def __next__(self):
-        first = self._start + self._n
-        last = self._n + self.window + self._start
-        if last > self._end:
-            raise StopIteration
-        self._n += 1
-        return self.timeseries[first:last]
-        
-    def __iter__(self):
-        worker_info = torch.utils.data.get_worker_info()
-        if worker_info is None: # single-process data loading, return the full iterator
-            self._start = 0
-            self._end = self.length
-        else: # split if inside a worker process
-            per_worker = int(math.ceil(self.length / float(worker_info.num_workers)))
-            worker_id = worker_info.id
-            self._start = worker_id * per_worker
-            self._end = min(start + per_worker, self.length)
-        self._n = 0
-        return self
+    def __getitem__(self, index):
+        last = index + self.window
+        if index < 0 or last > self.length:
+            raise IndexError
+        return self.timeseries[index:last]
