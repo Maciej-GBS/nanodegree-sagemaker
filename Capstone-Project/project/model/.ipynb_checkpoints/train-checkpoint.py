@@ -5,47 +5,13 @@ import json
 import numpy as np
 import pandas as pd
 import torch
+import torch.optim
 import torch.utils.data
 
 from model import *
 
-class SlidingWindowDataset(torch.utils.data.IterableDataset):
-    """
-    Iterable Dataset from numpy array data containing history of market.
-    Slides a window over the dataset, ensures that output has the shape of
-    (window_size, data_columns)
-    """
-    def __init__(self, data, window_size):
-        super().__init__()
-        self.timeseries = data
-        self.window = window_size
-        self.length = len(self.timeseries)
-        
-    def __next__(self):
-        first = self._start + self._n
-        last = self._n + self.window + self._start
-        if last > self._end:
-            raise StopIteration
-        self._n += 1
-        return self.timeseries[first:last]
-        
-    def __iter__(self):
-        worker_info = torch.utils.data.get_worker_info()
-        if worker_info is None: # single-process data loading, return the full iterator
-            self._start = 0
-            self._end = self.length
-        else: # split if inside a worker process
-            per_worker = int(math.ceil(self.length / float(worker_info.num_workers)))
-            worker_id = worker_info.id
-            self._start = worker_id * per_worker
-            self._end = min(start + per_worker, self.length)
-        # window looks forward so _end has to shrinked
-        self._end -= self.window
-        self._n = 0
-        return self
-
-def _get_train_data_loader(batch_size, sliding_window, pair, training_dir):
-    train_data = pd.read_csv(os.path.join(training_dir, "train_{}.csv".format(pair)), header=None, names=None)
+def _get_train_data_loader(batch_size, sliding_window, training_dir):
+    train_data = pd.read_csv(os.path.join(training_dir, "train.csv"), header=None, names=None)
     train_ds = SlidingWindowDataset(train_data.values, sliding_window)
     return torch.utils.data.DataLoader(train_ds, batch_size=batch_size)
 
@@ -64,12 +30,12 @@ def train(model, outputs, train_loader, epochs, optimizer, loss_fn, device):
         total_loss = 0
         for batch in train_loader:         
             # Slice dataset for input and output
-            batch_X = batch[:len(batch)-outputs].to(device)
-            batch_Y = batch[-outputs:].to(device)
+            batch_X = batch[:,:batch.shape[1]-outputs].to(device)
+            batch_Y = batch[:,-outputs:].to(device)
             
             y = model(batch_X)
             # Use only Close price column
-            loss = loss_fn(y, batch_Y[:,3])
+            loss = loss_fn(y, batch_Y[:,:,3])
             loss.backward()
 
             # Update weights and reset gradients
@@ -123,7 +89,7 @@ if __name__ == '__main__':
     torch.manual_seed(args.seed)
 
     window_size = args.input_size + args.output_size
-    train_loader = _get_train_data_loader(args.batch_size, window_size, args.pair, args.data_dir)
+    train_loader = _get_train_data_loader(args.batch_size, window_size, args.data_dir)
     
     if args.type==1:
         model = LSTMBatchRegressor(input_size=args.input_size,
@@ -141,10 +107,10 @@ if __name__ == '__main__':
                               lstm_hidden=args.lstm_hidden,
                               dropout=args.dropout,
                               output_size=args.output_size)
-    model = model.to(device)
+    model = model.double().to(device)
 
     # Train the model.
-    optimizer = optim.Adam(model.parameters())
+    optimizer = torch.optim.Adam(model.parameters())
     loss_fn = torch.nn.MSELoss(reduction='sum')
     train(model, args.output_size, train_loader, args.epochs, optimizer, loss_fn, device)
 

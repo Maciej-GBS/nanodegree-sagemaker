@@ -1,9 +1,11 @@
 import torch
 import torch.nn
+import torch.utils.data
 
 class LSTMRegressor(torch.nn.Module):
     """
     This model uses convolution to normalize input.
+    Then pushes the data through LSTM layers.
     Finally predicts change to most recent input Close value, which is added in the final output.
     Parameters:
     input_size,
@@ -34,7 +36,8 @@ class LSTMRegressor(torch.nn.Module):
         dense_out = self.dense(dense_in)
         # Add latest Close values to our output
         close = x[:,-1,3].reshape(x.shape[0])
-        return dense_out + (close * torch.ones(dense_out.shape[1],1)).t()
+        out_transform = torch.ones(dense_out.shape[1],1).type(dense_out.dtype)
+        return dense_out + (close * out_transform).t()
     
 class LSTMBatchRegressor(torch.nn.Module):
     """
@@ -64,8 +67,9 @@ class LSTMBatchRegressor(torch.nn.Module):
         dense_in = self.drop(lstm_out.flatten(start_dim=1))
         dense_out = self.dense(dense_in)
         # Denormalize with std and mean from Close channel
-        std = (torch.std(x[:,:,3], dim=1) * torch.ones(dense_out.shape[1],1)).t()
-        mean = (torch.mean(x[:,:,3], dim=1) * torch.ones(dense_out.shape[1],1)).t()
+        out_transform = torch.ones(dense_out.shape[1],1).type(dense_out.dtype)
+        std = (torch.std(x[:,:,3], dim=1) * out_transform).t()
+        mean = (torch.mean(x[:,:,3], dim=1) * out_transform).t()
         return std * dense_out + mean
 
 def model_fn(model_dir):
@@ -104,7 +108,40 @@ def model_fn(model_dir):
     with open(model_path, 'rb') as f:
         model.load_state_dict(torch.load(f))
 
-    model.to(device).eval()
+    model.double().to(device).eval()
 
     print("> Model loading: Finished")
     return model
+
+class SlidingWindowDataset(torch.utils.data.IterableDataset):
+    """
+    Iterable Dataset from numpy array data containing history of market.
+    Slides a window over the dataset, ensures that output has the shape of
+    (window_size, data_columns)
+    """
+    def __init__(self, data, window_size):
+        super().__init__()
+        self.timeseries = data
+        self.window = window_size
+        self.length = len(self.timeseries)
+        
+    def __next__(self):
+        first = self._start + self._n
+        last = self._n + self.window + self._start
+        if last > self._end:
+            raise StopIteration
+        self._n += 1
+        return self.timeseries[first:last]
+        
+    def __iter__(self):
+        worker_info = torch.utils.data.get_worker_info()
+        if worker_info is None: # single-process data loading, return the full iterator
+            self._start = 0
+            self._end = self.length
+        else: # split if inside a worker process
+            per_worker = int(math.ceil(self.length / float(worker_info.num_workers)))
+            worker_id = worker_info.id
+            self._start = worker_id * per_worker
+            self._end = min(start + per_worker, self.length)
+        self._n = 0
+        return self
