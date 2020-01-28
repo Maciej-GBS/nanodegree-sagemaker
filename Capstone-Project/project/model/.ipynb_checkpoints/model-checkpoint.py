@@ -24,6 +24,7 @@ class LSTMRegressor(torch.nn.Module):
         c_out_channels = input_channels * c_filters
         self.conv = torch.nn.Conv1d(in_channels=input_channels, out_channels=c_out_channels, kernel_size=c_kernel_size)
         c_out = input_size - c_kernel_size + 1
+        self.relu = torch.nn.ReLU()
         self.lstm = torch.nn.LSTM(input_size=c_out, hidden_size=lstm_hidden, num_layers=lstm_layers, dropout=dropout)
         lstm_flat_out = lstm_hidden * c_out_channels
         self.drop = torch.nn.Dropout(p=dropout)
@@ -31,12 +32,13 @@ class LSTMRegressor(torch.nn.Module):
     
     def forward(self, x):
         conv_out = self.conv(x.transpose(-2,-1))
-        lstm_out, _ = self.lstm(conv_out)
+        relu_out = self.relu(conv_out)
+        lstm_out, _ = self.lstm(relu_out)
         dense_in = self.drop(lstm_out.flatten(start_dim=1))
         dense_out = self.dense(dense_in)
         # Add latest Close values to our output
         close = x[:,-1,3].reshape(x.shape[0])
-        out_transform = torch.ones(dense_out.shape[1],1).type(dense_out.dtype)
+        out_transform = torch.ones(dense_out.shape[1],1).type(dense_out.dtype).to(dense_out.device)
         return dense_out + (close * out_transform).t()
     
 class LSTMBatchRegressor(torch.nn.Module):
@@ -67,7 +69,7 @@ class LSTMBatchRegressor(torch.nn.Module):
         dense_in = self.drop(lstm_out.flatten(start_dim=1))
         dense_out = self.dense(dense_in)
         # Denormalize with std and mean from Close channel
-        out_transform = torch.ones(dense_out.shape[1],1).type(dense_out.dtype)
+        out_transform = torch.ones(dense_out.shape[1],1).type(dense_out.dtype).to(dense_out.device)
         std = (torch.std(x[:,:,3], dim=1) * out_transform).t()
         mean = (torch.mean(x[:,:,3], dim=1) * out_transform).t()
         return std * dense_out + mean
