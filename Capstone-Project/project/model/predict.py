@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 import torch
 import torch.utils.data
+import yfinance
 
 from model import *
 
