@@ -22,20 +22,20 @@ class LSTMRegressor(torch.nn.Module):
         super().__init__()
         # Each channel is a different column of our data
         # So input of 11 bars history has a shape of (N,C,L) = (len,batch,features) = (N,n_columns,11)
-        self.norm = torch.nn.BatchNorm1d(num_features=input_channels)
         c_out_channels = input_channels * c_filters
+        c_out = input_size - c_kernel_size + 1
+        lstm_flat_out = lstm_hidden * c_out_channels
+        #self.norm = torch.nn.BatchNorm1d(num_features=input_channels)
         self.conv = torch.nn.Conv1d(in_channels=input_channels, out_channels=c_out_channels, kernel_size=c_kernel_size)
         #self.c_filter = torch.normal(mean=torch.tensor([0.5,-1.0,0.5]),std=torch.tensor([0.1,0.3,0.1]))
         #self.c_filter = (self.c_filter * torch.ones(c_out_channels,input_channels,1)).requires_grad_()
         #self.c_bias = torch.zeros(c_out_channels).requires_grad_() # Parameters for functional convolution
-        c_out = input_size - c_kernel_size + 1
         self.lstm = torch.nn.LSTM(input_size=c_out, hidden_size=lstm_hidden, num_layers=lstm_layers, dropout=dropout)
-        lstm_flat_out = lstm_hidden * c_out_channels
         self.drop = torch.nn.Dropout(p=dropout)
         self.dense = torch.nn.Linear(in_features=lstm_flat_out, out_features=output_size)
     
     def forward(self, x):
-        norm_out = self.norm(x.transpose(-2,-1))
+        norm_out = x.transpose(-2,-1) #self.norm(x.transpose(-2,-1))
         conv_out = self.conv(norm_out)
         #self.c_filter = self.c_filter.type(x.dtype).to(x.device) # Functional implementation of convolution
         #self.c_bias = self.c_bias.type(x.dtype).to(x.device)
@@ -45,11 +45,12 @@ class LSTMRegressor(torch.nn.Module):
         dense_out = self.dense(dense_in)
         
         # Denormalize with std and mean from Close channel
-        #close = x[:,-1,3].reshape(x.shape[0]) # (close * out_transform).t()
         out_transform = torch.ones(dense_out.shape[1],1).type(dense_out.dtype).to(dense_out.device)
-        std = (torch.std(x[:,:,3], dim=1) * out_transform).t()
-        mean = (torch.mean(x[:,:,3], dim=1) * out_transform).t()
-        return std * dense_out + mean
+        close = x[:,-1,3].reshape(x.shape[0])
+        return dense_out + (close * out_transform).t()
+        #std = (torch.std(x[:,:,3], dim=1) * out_transform).t()
+        #mean = (torch.mean(x[:,:,3], dim=1) * out_transform).t()
+        #return std * dense_out + mean
 
 def model_fn(model_dir):
     """Load the PyTorch model from the `model_dir` directory."""
