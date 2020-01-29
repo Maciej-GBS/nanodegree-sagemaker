@@ -56,8 +56,6 @@ if __name__ == '__main__':
     parser.add_argument('--seed', type=int, default=12, metavar='S',
                         help='random seed (default: 12)')
     # Model Parameters
-    parser.add_argument('--type', type=int, default=0, metavar='N',
-                        help='regressor type: 1-batch, 0-convolution (default: 0)')
     parser.add_argument('--input-size', type=int, default=5, metavar='N',
                         help='input window size (default: 5)')
     parser.add_argument('--input-channels', type=int, default=9, metavar='N',
@@ -91,22 +89,14 @@ if __name__ == '__main__':
     window_size = args.input_size + args.output_size
     train_loader = _get_train_data_loader(args.batch_size, window_size, args.data_dir)
     
-    if args.type==1:
-        model = LSTMBatchRegressor(input_size=args.input_size,
-                                   input_channels=args.input_channels,
-                                   lstm_layers=args.lstm_layers,
-                                   lstm_hidden=args.lstm_hidden,
-                                   dropout=args.dropout,
-                                   output_size=args.output_size)
-    else:
-        model = LSTMRegressor(input_size=args.input_size,
-                              input_channels=args.input_channels,
-                              c_filters=args.c_filters,
-                              c_kernel_size=args.c_kernel_size,
-                              lstm_layers=args.lstm_layers,
-                              lstm_hidden=args.lstm_hidden,
-                              dropout=args.dropout,
-                              output_size=args.output_size)
+    model = LSTMRegressor(input_size=args.input_size,
+                          input_channels=args.input_channels,
+                          c_filters=args.c_filters,
+                          c_kernel_size=args.c_kernel_size,
+                          lstm_layers=args.lstm_layers,
+                          lstm_hidden=args.lstm_hidden,
+                          dropout=args.dropout,
+                          output_size=args.output_size)
     model = model.double().to(device)
 
     # Train the model.
@@ -118,7 +108,6 @@ if __name__ == '__main__':
     model_info_path = os.path.join(args.model_dir, 'model_info.pth')
     with open(model_info_path, 'wb') as f:
         model_info = {
-            'type': args.type,
             'input_size': args.input_size,
             'input_channels': args.input_channels,
             'lstm_layers': args.lstm_layers,

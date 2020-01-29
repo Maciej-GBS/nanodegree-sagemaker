@@ -65,22 +65,14 @@ def model_fn(model_dir):
     print("> model_info: {}".format(model_info))
 
     # Rebuild model from info
-    if model_info['type']==1:
-        model = LSTMBatchRegressor(input_size=model_info['input_size'],
-                                   input_channels=model_info['input_channels'],
-                                   lstm_layers=model_info['lstm_layers'],
-                                   lstm_hidden=model_info['lstm_hidden'],
-                                   dropout=model_info['dropout'],
-                                   output_size=model_info['output_size'])
-    else:
-        model = LSTMRegressor(input_size=model_info['input_size'],
-                              input_channels=model_info['input_channels'],
-                              c_filters=model_info['c_filters'],
-                              c_kernel_size=model_info['c_kernel_size'],
-                              lstm_layers=model_info['lstm_layers'],
-                              lstm_hidden=model_info['lstm_hidden'],
-                              dropout=model_info['dropout'],
-                              output_size=model_info['output_size'])
+    model = LSTMRegressor(input_size=model_info['input_size'],
+                          input_channels=model_info['input_channels'],
+                          c_filters=model_info['c_filters'],
+                          c_kernel_size=model_info['c_kernel_size'],
+                          lstm_layers=model_info['lstm_layers'],
+                          lstm_hidden=model_info['lstm_hidden'],
+                          dropout=model_info['dropout'],
+                          output_size=model_info['output_size'])
 
     # Restore model
     model_path = os.path.join(model_dir, 'model.pth')

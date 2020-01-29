@@ -9,9 +9,11 @@ import yfinance as yf
 
 from model import *
 
-def convert(data, interval, ema=0.03, sma=70, rsi=14):
-    # Drop Volume
+def convert(data, interval, meta, ema=0.03, sma=70, rsi=14):
+    # Get specific columns Open High Low Close
+    data = data.loc[:,['Open','High','Low','Close']]
     # Divide by max
+    data = data / meta
     # Apply indicators
     data = indicators.Gap(data, np.timedelta64(int(interval[:-1]),interval[-1]))
     data = indicators.EMA(data, P=ema)
@@ -34,7 +36,7 @@ def input_fn(serialized_input_data, content_type):
     
     sym = yf.Ticker(sym_info['symbol'])
     data = sym.history(period=period, interval=interval)
-    return data
+    return convert(data, interval, sym_info['meta'])
 
 def output_fn(prediction_output, accept):
     print("> Responding with forecast")
