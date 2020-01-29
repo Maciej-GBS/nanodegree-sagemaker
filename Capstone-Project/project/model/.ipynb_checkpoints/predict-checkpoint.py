@@ -1,16 +1,23 @@
-import json
 #import sagemaker_containers # Module not found?
+import json
 import numpy as np
 import pandas as pd
+import indicators
 import torch
 import torch.utils.data
 import yfinance as yf
 
 from model import *
 
-def convert(data):
-    pd
-    # TODO: write me
+def convert(data, interval, ema=0.03, sma=70, rsi=14):
+    # Drop Volume
+    # Divide by max
+    # Apply indicators
+    data = indicators.Gap(data, np.timedelta64(int(interval[:-1]),interval[-1]))
+    data = indicators.EMA(data, P=ema)
+    data = indicators.SMA(data, N=sma)
+    data = indicators.Momentum(data)
+    data = indicators.RSI(data, period=rsi)
     return data
 
 def input_fn(serialized_input_data, content_type):

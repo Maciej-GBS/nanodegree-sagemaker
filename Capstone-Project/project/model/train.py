@@ -1,7 +1,7 @@
+#import sagemaker_containers # Module not found?
 import argparse
 import os
 import json
-#import sagemaker_containers # Module not found?
 import numpy as np
 import pandas as pd
 import torch

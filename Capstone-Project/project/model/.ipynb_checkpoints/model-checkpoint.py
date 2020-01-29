@@ -22,6 +22,7 @@ class LSTMRegressor(torch.nn.Module):
         super().__init__()
         # Each channel is a different column of our data
         # So input of 11 bars history has a shape of (N,C,L) = (len,batch,features) = (N,n_columns,11)
+        self.norm = torch.nn.BatchNorm1d(num_features=input_channels)
         c_out_channels = input_channels * c_filters
         self.conv = torch.nn.Conv1d(in_channels=input_channels, out_channels=c_out_channels, kernel_size=c_kernel_size)
         #self.c_filter = torch.normal(mean=torch.tensor([0.5,-1.0,0.5]),std=torch.tensor([0.1,0.3,0.1]))
@@ -34,46 +35,17 @@ class LSTMRegressor(torch.nn.Module):
         self.dense = torch.nn.Linear(in_features=lstm_flat_out, out_features=output_size)
     
     def forward(self, x):
-        conv_out = self.conv(x.transpose(-2,-1))
+        norm_out = self.norm(x.transpose(-2,-1))
+        conv_out = self.conv(norm_out)
         #self.c_filter = self.c_filter.type(x.dtype).to(x.device) # Functional implementation of convolution
         #self.c_bias = self.c_bias.type(x.dtype).to(x.device)
         #conv_out = torch.nn.functional.conv1d(x.transpose(-2,-1), self.c_filter, bias=self.c_bias)
         lstm_out, _ = self.lstm(conv_out)
         dense_in = self.drop(lstm_out.flatten(start_dim=1))
         dense_out = self.dense(dense_in)
-        # Add latest Close value to our output
-        close = x[:,-1,3].reshape(x.shape[0])
-        out_transform = torch.ones(dense_out.shape[1],1).type(dense_out.dtype).to(dense_out.device)
-        return dense_out + (close * out_transform).t()
-    
-class LSTMBatchRegressor(torch.nn.Module):
-    """
-    LSTM regression with batch normalization on input.
-    Output is denormalized with average and standard deviation from Close channel.
-    Parameters:
-    input_size,
-    input_channels (columns),
-    lstm_layers,
-    lstm_hidden (lstm layer output count),
-    dropout (probability to zero a value),
-    output_size (prediction horizon in a single forward pass)
-    """
-    def __init__(self, input_size, input_channels, lstm_layers, lstm_hidden, dropout, output_size):
-        super().__init__()
-        # Each channel is a different column of our data
-        # So input of 11 bars history has a shape of (N,C,L) = (len,batch,features) = (N,n_columns,11)
-        self.norm = torch.nn.BatchNorm1d(num_features=input_channels)
-        self.lstm = torch.nn.LSTM(input_size=input_size, hidden_size=lstm_hidden, num_layers=lstm_layers, dropout=dropout)
-        lstm_flat_out = lstm_hidden * input_channels
-        self.drop = torch.nn.Dropout(p=dropout)
-        self.dense = torch.nn.Linear(in_features=lstm_flat_out, out_features=output_size)
-    
-    def forward(self, x):
-        norm_out = self.norm(x.transpose(-2,-1))
-        lstm_out, _ = self.lstm(norm_out)
-        dense_in = self.drop(lstm_out.flatten(start_dim=1))
-        dense_out = self.dense(dense_in)
+        
         # Denormalize with std and mean from Close channel
+        #close = x[:,-1,3].reshape(x.shape[0]) # (close * out_transform).t()
         out_transform = torch.ones(dense_out.shape[1],1).type(dense_out.dtype).to(dense_out.device)
         std = (torch.std(x[:,:,3], dim=1) * out_transform).t()
         mean = (torch.mean(x[:,:,3], dim=1) * out_transform).t()
