@@ -1,3 +1,4 @@
+import os.path
 import torch
 import torch.nn
 import torch.utils.data
@@ -6,7 +7,7 @@ class LSTMRegressor(torch.nn.Module):
     """
     This model uses convolution to normalize input.
     Then pushes the data through LSTM layers.
-    Finally predicts change to most recent input Close value, which is added in the final output.
+    Finally the prediction is change: LatestClose + predicted_change
     Parameters:
     input_size,
     input_channels (columns),
@@ -22,9 +23,10 @@ class LSTMRegressor(torch.nn.Module):
         # Each channel is a different column of our data
         # So input of 11 bars history has a shape of (N,C,L) = (len,batch,features) = (N,n_columns,11)
         c_out_channels = input_channels * c_filters
-        self.c_filter = (torch.tensor([0.3, -1, 0.7]) * torch.ones(c_out_channels,input_channels,1)).requires_grad_()
-        self.c_bias = torch.zeros(c_out_channels).requires_grad_()
-        #self.conv = torch.nn.Conv1d(in_channels=input_channels, out_channels=c_out_channels, kernel_size=c_kernel_size)
+        self.conv = torch.nn.Conv1d(in_channels=input_channels, out_channels=c_out_channels, kernel_size=c_kernel_size)
+        #self.c_filter = torch.normal(mean=torch.tensor([0.5,-1.0,0.5]),std=torch.tensor([0.1,0.3,0.1]))
+        #self.c_filter = (self.c_filter * torch.ones(c_out_channels,input_channels,1)).requires_grad_()
+        #self.c_bias = torch.zeros(c_out_channels).requires_grad_() # Parameters for functional convolution
         c_out = input_size - c_kernel_size + 1
         self.lstm = torch.nn.LSTM(input_size=c_out, hidden_size=lstm_hidden, num_layers=lstm_layers, dropout=dropout)
         lstm_flat_out = lstm_hidden * c_out_channels
@@ -32,14 +34,14 @@ class LSTMRegressor(torch.nn.Module):
         self.dense = torch.nn.Linear(in_features=lstm_flat_out, out_features=output_size)
     
     def forward(self, x):
-        #conv_out = self.conv(x.transpose(-2,-1))
-        self.c_filter = self.c_filter.type(x.dtype).to(x.device)
-        self.c_bias = self.c_bias.type(x.dtype).to(x.device)
-        conv_out = torch.nn.functional.conv1d(x.transpose(-2,-1), self.c_filter, bias=self.c_bias)
+        conv_out = self.conv(x.transpose(-2,-1))
+        #self.c_filter = self.c_filter.type(x.dtype).to(x.device) # Functional implementation of convolution
+        #self.c_bias = self.c_bias.type(x.dtype).to(x.device)
+        #conv_out = torch.nn.functional.conv1d(x.transpose(-2,-1), self.c_filter, bias=self.c_bias)
         lstm_out, _ = self.lstm(conv_out)
         dense_in = self.drop(lstm_out.flatten(start_dim=1))
         dense_out = self.dense(dense_in)
-        # Add latest Close values to our output
+        # Add latest Close value to our output
         close = x[:,-1,3].reshape(x.shape[0])
         out_transform = torch.ones(dense_out.shape[1],1).type(dense_out.dtype).to(dense_out.device)
         return dense_out + (close * out_transform).t()
