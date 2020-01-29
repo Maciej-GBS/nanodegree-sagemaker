@@ -5,6 +5,7 @@ Here one can find all project notebooks and source code.
 Module for applying various indicators on the dataset.
 
 Implements:
+- Gap
 - SMA
 - EMA
 - Momentum

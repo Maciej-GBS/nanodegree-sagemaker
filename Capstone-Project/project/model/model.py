@@ -22,8 +22,8 @@ class LSTMRegressor(torch.nn.Module):
         # Each channel is a different column of our data
         # So input of 11 bars history has a shape of (N,C,L) = (len,batch,features) = (N,n_columns,11)
         c_out_channels = input_channels * c_filters
-        self.c_filter = (torch.tensor([0.3, -1, 0.7]) * torch.ones(c_out_channels,input_channels,1)).requires_grad()
-        self.c_bias = torch.zeros(c_out_channels).requires_grad()
+        self.c_filter = (torch.tensor([0.3, -1, 0.7]) * torch.ones(c_out_channels,input_channels,1)).requires_grad_()
+        self.c_bias = torch.zeros(c_out_channels).requires_grad_()
         #self.conv = torch.nn.Conv1d(in_channels=input_channels, out_channels=c_out_channels, kernel_size=c_kernel_size)
         c_out = input_size - c_kernel_size + 1
         self.lstm = torch.nn.LSTM(input_size=c_out, hidden_size=lstm_hidden, num_layers=lstm_layers, dropout=dropout)
