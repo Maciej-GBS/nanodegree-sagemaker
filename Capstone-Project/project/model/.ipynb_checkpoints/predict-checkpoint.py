@@ -9,6 +9,7 @@ import yfinance as yf
 from model import *
 
 def convert(data):
+    pd
     # TODO: write me
     return data
 
@@ -17,9 +18,13 @@ def input_fn(serialized_input_data, content_type):
     if content_type != 'application/json':
         raise Exception('Requested unsupported ContentType in content_type: ' + content_type)
     print("> Received input symbol")
-    sym_info = serialized_input_data.decode('utf-8')
-    interval = sym_info['interval'] if sym_info['interval'] in ['1m','2m','5m','15m','30m','60m','90m','1h','1d'] else '1h'
+    
+    sym_info = json.loads(serialized_input_data)
+    interval = '1h'
+    if sym_info['interval'] in ['1m','2m','5m','15m','30m','60m','90m','1h','1d']:
+        interval = sym_info['interval']
     period = '1mo' if ('d' in interval) else '5d'
+    
     sym = yf.Ticker(sym_info['symbol'])
     data = sym.history(period=period, interval=interval)
     return data

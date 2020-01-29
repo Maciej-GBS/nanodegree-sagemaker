@@ -1,7 +1,7 @@
 # Project Details
 Here one can find all project notebooks and source code.
 
-## indicators
+## model/indicators
 Module for applying various indicators on the dataset.
 
 Implements:
