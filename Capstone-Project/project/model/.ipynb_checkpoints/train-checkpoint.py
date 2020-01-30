@@ -34,10 +34,9 @@ def train(model, outputs, train_loader, use_cols, epochs, optimizer, loss_fn, de
             batch_X = batch[:,:batch.shape[1]-outputs].to(device)
             batch_Y = batch[:,-outputs:].to(device)
             
-            # WHAT DO WE PREDICT ?
             y = model(batch_X[:,:,use_cols])
-            # Use only Close price column
-            loss = loss_fn(y, batch_Y[:,:,3])
+            # TODO: fix this
+            loss = loss_fn(y, batch_Y[:,:,7])
             loss.backward()
 
             # Update weights and reset gradients
@@ -60,8 +59,8 @@ if __name__ == '__main__':
     # Model Parameters
     parser.add_argument('--input-size', type=int, default=5, metavar='N',
                         help='input window size (default: 5)')
-    parser.add_argument('--input-channels', type=int, default=9, metavar='N',
-                        help='expected dataset columns (default: 9)')
+    parser.add_argument('--input-channels', type=str, default='0,1,2,3,4,5,6,7,8', metavar='CSL',
+                        help='dataset columns to use (default: 0,1,2,3,4,5,6,7,8)')
     parser.add_argument('--lstm-layers', type=int, default=2, metavar='N',
                         help='lstm layers used in the model (default: 2)')
     parser.add_argument('--lstm-hidden', type=int, default=1, metavar='N',
@@ -91,8 +90,10 @@ if __name__ == '__main__':
     window_size = args.input_size + args.output_size
     train_loader = _get_train_data_loader(args.batch_size, window_size, args.data_dir)
     
+    channels = [int(x) for x in args.input_channels.split(',') if len(x) > 0]
+    
     model = LSTMRegressor(input_size=args.input_size,
-                          input_channels=args.input_channels,
+                          input_channels=len(channels),
                           c_filters=args.c_filters,
                           c_kernel_size=args.c_kernel_size,
                           lstm_layers=args.lstm_layers,
@@ -104,14 +105,14 @@ if __name__ == '__main__':
     # Train the model.
     optimizer = torch.optim.Adam(model.parameters())
     loss_fn = torch.nn.MSELoss(reduction='sum')
-    train(model, args.output_size, train_loader, list(range(0,10)), args.epochs, optimizer, loss_fn, device)
+    train(model, args.output_size, train_loader, channels, args.epochs, optimizer, loss_fn, device)
 
     # Save the model parameters to model_info
     model_info_path = os.path.join(args.model_dir, 'model_info.pth')
     with open(model_info_path, 'wb') as f:
         model_info = {
             'input_size': args.input_size,
-            'input_channels': args.input_channels,
+            'input_channels': channels,
             'lstm_layers': args.lstm_layers,
             'lstm_hidden': args.lstm_hidden,
             'dropout': args.dropout,

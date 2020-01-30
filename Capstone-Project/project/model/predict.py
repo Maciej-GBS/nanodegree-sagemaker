@@ -12,31 +12,27 @@ from model import *
 def convert(data, interval, meta, ema=0.03, sma=70, rsi=14):
     # Get specific columns Open High Low Close
     data = data.loc[:,['Open','High','Low','Close']]
-    # Divide by max
-    data = data / meta
     # Apply indicators
     data = indicators.Gap(data, np.timedelta64(int(interval[:-1]),interval[-1]))
     data = indicators.EMA(data, P=ema)
     data = indicators.SMA(data, N=sma)
     data = indicators.Momentum(data)
     data = indicators.RSI(data, period=rsi)
-    return data
+    # Return only meta channels
+    return data.iloc[:, meta]
 
 def input_fn(serialized_input_data, content_type):
     """ Input should be text symbol to predict on (e.g. EURUSD) """
     if content_type != 'application/json':
         raise Exception('Requested unsupported ContentType in content_type: ' + content_type)
-    print("> Received input symbol")
+    print("> Received symbol information")
     
     sym_info = json.loads(serialized_input_data)
-    interval = '1h'
-    if sym_info['interval'] in ['1m','2m','5m','15m','30m','60m','90m','1h','1d']:
-        interval = sym_info['interval']
-    period = '1mo' if ('d' in interval) else '5d'
-    
+    interval = sym_info['interval']
+    period = '1mo'
     sym = yf.Ticker(sym_info['symbol'])
     data = sym.history(period=period, interval=interval)
-    return convert(data, interval, sym_info['meta'])
+    return convert(data, interval, model_info['input_channels'])
 
 def output_fn(prediction_output, accept):
     print("> Responding with forecast")
