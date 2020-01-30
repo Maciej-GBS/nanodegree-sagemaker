@@ -34,9 +34,9 @@ def train(model, outputs, train_loader, use_cols, epochs, optimizer, loss_fn, de
             batch_X = batch[:,:batch.shape[1]-outputs].to(device)
             batch_Y = batch[:,-outputs:].to(device)
             
-            y = model(batch_X[:,:,use_cols])
-            # TODO: fix this
-            loss = loss_fn(y, batch_Y[:,:,7])
+            raw_y = model(batch_X[:,:,use_cols])
+            y = raw_y + batch_X[:,-1,3].reshape(raw_y.shape[0],1).repeat(1,outputs)
+            loss = loss_fn(y, batch_Y[:,:,3])
             loss.backward()
 
             # Update weights and reset gradients

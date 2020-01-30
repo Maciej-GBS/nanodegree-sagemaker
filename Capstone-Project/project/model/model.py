@@ -29,6 +29,7 @@ class LSTMRegressor(torch.nn.Module):
         #self.c_bias = torch.zeros(c_out_channels).requires_grad_() # Parameters for functional convolution
         self.conv = torch.nn.Conv1d(in_channels=input_channels, out_channels=c_out_channels, kernel_size=c_kernel_size)
         self.norm = torch.nn.BatchNorm1d(c_out_channels)
+        self.relu = torch.nn.ReLU()
         self.lstm = torch.nn.LSTM(input_size=c_out, hidden_size=lstm_hidden, num_layers=lstm_layers, dropout=dropout)
         self.drop = torch.nn.Dropout(p=dropout)
         self.dense = torch.nn.Linear(in_features=lstm_flat_out, out_features=output_size)
@@ -39,7 +40,8 @@ class LSTMRegressor(torch.nn.Module):
         #conv_out = torch.nn.functional.conv1d(x.transpose(-2,-1), self.c_filter, bias=self.c_bias)
         conv_out = self.conv(x.transpose(-2,-1))
         norm_out = self.norm(conv_out)
-        lstm_out, _ = self.lstm(norm_out)
+        relu_out = self.relu(norm_out)
+        lstm_out, _ = self.lstm(relu_out)
         dense_in = self.drop(lstm_out.flatten(start_dim=1))
         dense_out = self.dense(dense_in)
         return dense_out
