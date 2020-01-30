@@ -15,10 +15,11 @@ def _get_train_data_loader(batch_size, sliding_window, training_dir):
     train_ds = SlidingWindowDataset(train_data.values, sliding_window)
     return torch.utils.data.DataLoader(train_ds, batch_size=batch_size)
 
-def train(model, outputs, train_loader, epochs, optimizer, loss_fn, device):
+def train(model, outputs, train_loader, use_cols, epochs, optimizer, loss_fn, device):
     """
     This is the training method that is called by the PyTorch training script. Parameters:
     model        - The PyTorch model that we wish to train.
+    outputs      - Expected model outputs
     train_loader - The PyTorch DataLoader that should be used during training.
     epochs       - The total number of epochs to train for.
     optimizer    - The optimizer to use during training.
@@ -33,7 +34,8 @@ def train(model, outputs, train_loader, epochs, optimizer, loss_fn, device):
             batch_X = batch[:,:batch.shape[1]-outputs].to(device)
             batch_Y = batch[:,-outputs:].to(device)
             
-            y = model(batch_X)
+            # WHAT DO WE PREDICT ?
+            y = model(batch_X[:,:,use_cols])
             # Use only Close price column
             loss = loss_fn(y, batch_Y[:,:,3])
             loss.backward()
@@ -102,7 +104,7 @@ if __name__ == '__main__':
     # Train the model.
     optimizer = torch.optim.Adam(model.parameters())
     loss_fn = torch.nn.MSELoss(reduction='sum')
-    train(model, args.output_size, train_loader, args.epochs, optimizer, loss_fn, device)
+    train(model, args.output_size, train_loader, list(range(0,10)), args.epochs, optimizer, loss_fn, device)
 
     # Save the model parameters to model_info
     model_info_path = os.path.join(args.model_dir, 'model_info.pth')

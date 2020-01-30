@@ -25,7 +25,7 @@ class LSTMRegressor(torch.nn.Module):
         c_out_channels = input_channels * c_filters
         c_out = input_size - c_kernel_size + 1
         lstm_flat_out = lstm_hidden * c_out_channels
-        #self.norm = torch.nn.BatchNorm1d(num_features=input_channels)
+        self.norm = torch.nn.BatchNorm1d(num_features=input_channels)
         self.conv = torch.nn.Conv1d(in_channels=input_channels, out_channels=c_out_channels, kernel_size=c_kernel_size)
         #self.c_filter = torch.normal(mean=torch.tensor([0.5,-1.0,0.5]),std=torch.tensor([0.1,0.3,0.1]))
         #self.c_filter = (self.c_filter * torch.ones(c_out_channels,input_channels,1)).requires_grad_()
@@ -35,7 +35,7 @@ class LSTMRegressor(torch.nn.Module):
         self.dense = torch.nn.Linear(in_features=lstm_flat_out, out_features=output_size)
     
     def forward(self, x):
-        norm_out = x.transpose(-2,-1) #self.norm(x.transpose(-2,-1))
+        norm_out = self.norm(x.transpose(-2,-1))
         conv_out = self.conv(norm_out)
         #self.c_filter = self.c_filter.type(x.dtype).to(x.device) # Functional implementation of convolution
         #self.c_bias = self.c_bias.type(x.dtype).to(x.device)
@@ -43,15 +43,8 @@ class LSTMRegressor(torch.nn.Module):
         lstm_out, _ = self.lstm(conv_out)
         dense_in = self.drop(lstm_out.flatten(start_dim=1))
         dense_out = self.dense(dense_in)
-        
-        # Denormalize with std and mean from Close channel
-        out_transform = torch.ones(dense_out.shape[1],1).type(dense_out.dtype).to(dense_out.device)
-        close = x[:,-1,3].reshape(x.shape[0])
-        return dense_out + (close * out_transform).t()
-        #std = (torch.std(x[:,:,3], dim=1) * out_transform).t()
-        #mean = (torch.mean(x[:,:,3], dim=1) * out_transform).t()
-        #return std * dense_out + mean
-
+        return dense_out
+    
 def model_fn(model_dir):
     """Load the PyTorch model from the `model_dir` directory."""
     print("> Loading model...")
@@ -101,7 +94,19 @@ class SlidingWindowDataset(torch.utils.data.Dataset):
         return self.length - self.window + 1
         
     def __getitem__(self, index):
-        last = index + self.window
-        if index < 0 or last > self.length:
-            raise IndexError
-        return self.timeseries[index:last]
+        if type(index) is slice:
+            start = 0
+            stop = self.length - self.window
+            step = 1
+            if index.start is not None:
+                start = index.start
+            if index.stop is not None:
+                stop = index.stop
+            if index.step is not None:
+                step = index.step
+            return np.array([self.timeseries[i:i+self.window] for i in range(start,stop,step)])
+        else:
+            last = index + self.window
+            if index < 0 or last > self.length:
+                raise IndexError
+            return self.timeseries[index:last]
