@@ -1,3 +1,4 @@
+import json
 import boto3
 
 def lambda_handler(event, context):
@@ -7,10 +8,10 @@ def lambda_handler(event, context):
                                        ContentType = 'text/plain',
                                        Body = event['body'])
 
-    result = response['Body'].read().decode('utf-8')
+    result = json.loads(response['Body'].read())
 
     return {
         'statusCode' : 200,
-        'headers' : { 'Content-Type' : 'text/plain', 'Access-Control-Allow-Origin' : '*' },
+        'headers' : { 'Content-Type' : 'application/json', 'Access-Control-Allow-Origin' : '*' },
         'body' : result
     }

@@ -7,12 +7,78 @@
         <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+        
         <script type="text/javascript">
+            function plot() {
+                chart = document.getElementById('chart');
+                var trace1 = {
+                    x: [], 
+                    close: [], 
+                    decreasing: {line: {color: '#7F7F7F'}}, 
+                    high: [], 
+                    increasing: {line: {color: '#17BECF'}}, 
+                    line: {color: 'rgba(31,119,180,1)'}, 
+                    low: [], 
+                    open: [], 
+                    type: 'candlestick', 
+                    xaxis: 'x', 
+                    yaxis: 'y'
+                };
+                var data = [trace1];
+                var layout = {
+                    dragmode: 'zoom', 
+                    margin: {
+                        r: 10, 
+                        t: 25, 
+                        b: 40, 
+                        l: 60
+                    }, 
+                    showlegend: false, 
+                    xaxis: {
+                        autorange: true, 
+                        domain: [0, 1], 
+                        range: ['2017-01-03 12:00', '2017-02-15 12:00'], 
+                        rangeslider: {range: ['2017-01-03 12:00', '2017-02-15 12:00']}, 
+                        title: 'Date', 
+                        type: 'date'
+                    }, 
+                    yaxis: {
+                        autorange: true, 
+                        domain: [0, 1], 
+                        range: [114.609999778, 137.410004222], 
+                        type: 'linear'
+                    }
+                };
+
+                Plotly.newPlot('myDiv', data, layout);
+            }
+            
+            function submitForm(oFormElement) {
+                var xhr = new XMLHttpRequest();
+                xhr.onload = function() {
+                    plot();
+                }
+                xhr.open (oFormElement.method, oFormElement.action, true);
+                var review = document.getElementById('review');
+                xhr.send (review.value);
+                return false;
+            }
+            
+            window.onload = () => {plot();};
         </script>
     </head>
     <body>
         <div class="container">
-            <!-- TODO: Display input -- collected from Yahoo! Finance -->
+            <!-- action = API Endpoint URL -->
+            <form method="POST"
+                  action="https://xf7gvzp0ag.execute-api.us-east-1.amazonaws.com/default/stock-predictor"
+                  onsubmit="return submitForm(this);">
+                <label for="review">Yahoo Symbol:</label>
+                <input id="symbol" value="EURUSD=X" />
+                <button type="submit" class="btn btn-default">Forecast</button>
+            </form>
+            <div id="chart" style="width:80vw;height:50vh;"></div>
             <!-- TODO: Evaluate and display predictions -- example POST url: https://njtgz4a6e5.execute-api.us-east-1.amazonaws.com/default/func -->
         </div>
     </body>
