@@ -5,9 +5,9 @@ import torch.utils.data
 
 def denormalize(y, close):
     """ Denormalize output of Regressor. Requires Close (predicted) input channel. """
-    recent = close[:,-1].reshape(y.shape[0],1).repeat(1,y.shape[1])
+    mean = torch.mean(close, dim=1).reshape(y.shape[0],1).repeat(1,y.shape[1])
     std = torch.std(close, dim=1).reshape(y.shape[0],1).repeat(1,y.shape[1])
-    return std*y + recent
+    return std*y + mean
     
 class LSTMRegressor(torch.nn.Module):
     """
@@ -28,12 +28,13 @@ class LSTMRegressor(torch.nn.Module):
         c_out_channels = input_channels * c_filters
         c_out = input_size - c_kernel_size + 1
         lstm_flat_out = lstm_hidden * c_out_channels
+        lstm_dropout = dropout if lstm_layers > 1 else 0.0
         self.norm = torch.nn.BatchNorm1d(input_channels)
         #self.c_filter = torch.normal(mean=torch.tensor([0.5,-1.0,0.5]),std=torch.tensor([0.1,0.3,0.1]))
         #self.c_filter = (self.c_filter * torch.ones(c_out_channels,input_channels,1)).requires_grad_()
         #self.c_bias = torch.zeros(c_out_channels).requires_grad_() # Parameters for functional convolution
         self.conv = torch.nn.Conv1d(in_channels=input_channels, out_channels=c_out_channels, kernel_size=c_kernel_size)
-        self.lstm = torch.nn.LSTM(input_size=c_out, hidden_size=lstm_hidden, num_layers=lstm_layers, dropout=dropout)
+        self.lstm = torch.nn.LSTM(input_size=c_out, hidden_size=lstm_hidden, num_layers=lstm_layers, dropout=lstm_dropout)
         self.drop = torch.nn.Dropout(p=dropout)
         self.dense = torch.nn.Linear(in_features=lstm_flat_out, out_features=output_size)
     
@@ -46,6 +47,12 @@ class LSTMRegressor(torch.nn.Module):
         lstm_out, _ = self.lstm(conv_out)
         dense_in = self.drop(lstm_out.flatten(start_dim=1))
         dense_out = self.dense(dense_in)
+        
+        # It is possible to normalize the output here,
+        # but this requires assumption of the Close channel
+        # position in the x tensor.
+        # Instead we return raw output and allow the script
+        # above to use denormalize function later.
         return dense_out
     
 model_info = None
