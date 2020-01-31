@@ -131,10 +131,19 @@ Instead of modifying the data it is possible to calculate some indicators knowin
 \end{figure}
 
 \section{Implementation}
-The easiest way to describe implementation steps is to start from the most basic source files.
-In the \texttt{Analysis} notebook \texttt{utils.py} was imported. It contains definitions for loading the data from \texttt{.csv} files and changing data timeframe. To apply some basic indicators a separate module was created for the needs of this project. The module has definitions for indicators SMA, EMA, Momentum and RSI oscillator (\cite{Indicies}). These is enough to get working with the \texttt{Analysis} notebook and export datasets into csv train and test files.
+The easiest way to describe implementation steps is to follow the notebooks and specify which scripts they use and what do they do.
+
+In the \texttt{Analysis} notebook \texttt{utils.py} was imported. It contains definitions for loading the data from \texttt{.csv} files and changing data timeframe. To apply some basic indicators a separate module was created for the needs of this project. The module has definitions for indicators SMA, EMA, Momentum and RSI oscillator (\cite{Indicies}). These are enough to get working with the \texttt{Analysis} notebook and export datasets into csv train and test files.
+
+Next \texttt{Model} notebook works with \texttt{model.py} and \texttt{train.py} files from the \texttt{model} directory which is used as a source dir for deployment. This notebook creates benchmark MA model, optimizes it, tests input and training of LSTM model, starts SageMaker training with specified for it and finally compares predictions losses of the 2 methods directly.
+
+The last notebook is the \texttt{WebApp} which basically takes care of getting the correct files into the source dir, tests yfinance module and deploys the RealTimePredictor, so we can use it from the web application.
+The Webapp is just one HTML file that uses javascript to send requests to the Lambda through API Gateway, there are a lot of steps to get it running on AWS but the HTML itself requires only setting the API url. I wanted to make this more interesting by allowing the webapp to run predictions on any symbol live.
 
 \section{Refinement}
+Currently, the predictor is fixed to use the output size as the horizon of predictions. This means that output size of $N$ will make the model train to predict $N$ future values. This is just implementation because in this project there were no models trained with output size larger than 1.
+
+Model was trained with 40 epochs on NASDAQ first and EURUSD second. The overall MSE loss (summed) for NASDAQ was: 529202 (train) / 1133107 (validation) and for EURUSD: 0.0028569 (train) / 0.0018057 (test).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -146,7 +155,17 @@ In the \texttt{Analysis} notebook \texttt{utils.py} was imported. It contains de
 
 \part{Conclusion}
 \section{Reflection}
+I guess that efficient-market hypothesis has beaten me once again.
+
 \section{Further Improvements}
+Here the same model was trained on both datasets, which did not prove to provide any better accuracy in forecasting.
+It may be better to train separate model for each symbol.
+
+In this work the datasets had combined length of 2250. More data should improve the model.
+
+Predicting High and Low instead may greatly improve usefulness of the forecasts. It is very difficult to accurately predict a price, but a range can be predicted with a higher certainty.
+
+If the model had accuracy above a certain level it may be profitable in a trading or investing strategy once implemented.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 
