@@ -13,7 +13,7 @@ class LSTMRegressor(torch.nn.Module):
     """
     Parameters:
     input_size,
-    input_channels (columns),
+    input_channels (list of column ids),
     c_filters (convolution filters),
     c_kernel_size (1-D filter size),
     lstm_layers,
@@ -25,6 +25,7 @@ class LSTMRegressor(torch.nn.Module):
         super().__init__()
         self.size = input_size
         self.channels = input_channels
+        input_channels = len(input_channels)
         # Each channel is a different column of our data
         # So input of 11 bars history has a shape of (N,C,L) = (len,batch,features) = (N,n_columns,11)
         c_out_channels = input_channels * c_filters
@@ -72,7 +73,7 @@ def model_fn(model_dir):
 
     # Rebuild model from info
     model = LSTMRegressor(input_size=model_info['input_size'],
-                          input_channels=len(model_info['input_channels']),
+                          input_channels=model_info['input_channels'],
                           c_filters=model_info['c_filters'],
                           c_kernel_size=model_info['c_kernel_size'],
                           lstm_layers=model_info['lstm_layers'],

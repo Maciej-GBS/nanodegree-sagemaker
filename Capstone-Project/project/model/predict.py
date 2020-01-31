@@ -19,7 +19,7 @@ def convert(data, horizon, meta, ema=0.03, sma=70, rsi=14):
     data = indicators.Momentum(data)
     data = indicators.RSI(data, period=rsi)
     # Return only meta channels
-    return torch.from_numpy(data.iloc[:, meta].values[-horizon:])
+    return torch.from_numpy(data.iloc[-horizon:, meta].values)
 
 def input_fn(serialized_input_data, content_type):
     """ Input should be text symbol to predict on (e.g. EURUSD) """
