@@ -42,7 +42,7 @@ Evaluation will be performed on test data which is the 20\% tail of our datasets
 \part{Analysis}
 \section{Data Exploration}
 Data is represented with "candles". Each candle is stored in one row of our dataset and it is defined with a datetime stamp. Timeframe represents how long is each candle lifespan, 1 minute being the shortest and technically with no upper limit, but usually it is not common to get data with timeframe longer than 1 month.
-The dataset I have acquired consists of 5 years NASDAQ stock market history with 1-day timeframe (source: Yahoo! Finance \cite{Yahoo}). Another dataset is 5 years of EURUSD history with 1-minute timeframe (soure: HistData \cite{HistData}).
+The dataset I have acquired consists of 5 years NASDAQ stock market history with 1-day timeframe (source: Yahoo! Finance \cite{Yahoo}). Another dataset is 5 years of EURUSD history with 1-minute timeframe (source: HistData \cite{HistData}).
 
 Market data consists of four basic columns: Open, High, Low, Close and for stock markets: Volume.
 
@@ -57,35 +57,55 @@ Market data consists of four basic columns: Open, High, Low, Close and for stock
 There are important differences between NASDAQ and EURUSD data. First currency pairs do not have Volume, so this data is missing and for convenience I will drop this column from NASDAQ as well. Another aspect is the value difference, NASDAQ ranges from $4000$ to $9000$, while EURUSD was much more stable for last 5 years staying around $1.15$. EURUSD will be converted to 1-day timeframe, so it matches the other dataset. Such change greatly reduces the amount of entries, which makes working with this data faster (for the cost of information loss).
 
 \begin{figure}[h]
+	\centering
 	\includegraphics[width=\textwidth]{nasdaqTable}
 	\caption{Sample of market data (NASDAQ)}
-	\centering
 \end{figure}
 
 \section{Visualization}
 It is vital to have the values correctly distributed. Market is unbalanced and the prices can range from 0 to infinity. For training it is best when the dataset has normal distribution (\cite{Distribution}), the histograms below do show that some kind of normalization will be needed.
 EURUSD overall looks closer to what we need, but it is possible to get it better than that using normalization techniques.
-Market data actually is normally distributed but only on short samples and only if there is no strong trend in the sample (in this case distribution looks like NASDAQ histograms).
+
+Market data actually is normally distributed but only on short samples and only if there is no strong trend in the sample (in such case distribution looks more like NASDAQ histograms).
+
 \begin{figure}[h]
-	\includegraphics[width=\textwidth]{nasdaqHist}
-	\caption{Histograms (NASDAQ)}
 	\centering
+	\includegraphics[scale=2.2]{nasdaqHist}
+	\caption{Histograms (NASDAQ)}
 \end{figure}
 \begin{figure}[h]
-	\includegraphics[width=\textwidth]{eurusdHist}
-	\caption{Histograms (EURUSD)}
 	\centering
+	\includegraphics[scale=2.2]{eurusdHist}
+	\caption{Histograms (EURUSD)}
 \end{figure}
 
 \section{Algorithms \& Techniques}
+The regressor uses Long Short Term Memory, which is one of the best currently known methods for working with timeseries data and any other position dependent information sets (e.g. words in a sentence). This model is based on PyTorch framework (\cite{Torch}).
+
+Architecture of the model is 1-D Batch Normalization over the input split into channels, which are the columns of our data making predictor independent of the input scale. Then 1-D Convolution is applied, which allows to extract more information from the input. Combination of these methods allow the model to work with both datasets in the state as they are -- no scaling is required during data preprocessing.
+
+Normalized input is flattened finally passed to fully connected layer, which outputs predictions for $N$ future Close price values. Output is in normalized space though and a function to denormalize output into correct value is required (\ref{denorm}).
+\begin{equation}
+\label{denorm}
+prediction = std(input[Close]) * output + mean(input[Close])
+\end{equation}
+
+Web application is an HTML document using javascript to retrieve forecasts on demand. User provides any Yahoo symbol as a string and receives forecast for it as a json response. Received data is plotted using Plotly \cite{Plotly}.
 
 \section{Benchmark Model}
+The only way to tell how good the model will perform is to compare it with another solution. Moving Average prediction is a great option here. It assumes that next value is the average of last $N$ observations, where $N$ is the count of observed values. It turned out that the value of $N = 2$ is the best. There is a good visualization of how this works \cite{Vidhya}.
+\begin{figure}[h]
+	\centering
+	\includegraphics[scale=0.5]{ma}
+	\caption{Moving Average prediction sequence \cite{Vidhya}}
+\end{figure}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 
 \part{Methodology}
 \section{Data Preprocessing}
-Knowing only the previous Open, High, Low and Close prices, we can produce some new features:
+As stated in the Algorithms \& Techniques section there is no need to scale the data, predictor will do it on its own.
+Instead of modifying the data it is possible to calculate some indicators knowing only the previous Open, High, Low and Close prices. This way we can generate some new features:
 \begin{itemize}
 	\item Gap -- days between entries, market is shut down for holidays resulting in gaps in the data.
 	\item EMA -- exponential moving average.
@@ -95,22 +115,25 @@ Knowing only the previous Open, High, Low and Close prices, we can produce some 
 \end{itemize}
 
 \begin{figure}[h]
-	\includegraphics[width=\textwidth]{nasdaqClose}
-	\caption{Close price (blue) with EMA (red) and SMA (green) indicators (NASDAQ)}
+	\includegraphics[height=6cm,width=\textwidth]{nasdaqClose}
+	\caption{(NASDAQ) Close price (blue) with EMA (red) and SMA (green) indicators}
 	\centering
 \end{figure}
 \begin{figure}[h]
-	\includegraphics[width=\textwidth]{nasdaqMom}
-	\caption{Momentum (NASDAQ)}
+	\includegraphics[height=4cm,width=\textwidth]{nasdaqMom}
+	\caption{(NASDAQ) Momentum}
 	\centering
 \end{figure}
 \begin{figure}[h]
-	\includegraphics[width=\textwidth]{nasdaqRSI}
-	\caption{Relative Strength Index (NASDAQ)}
+	\includegraphics[height=4cm,width=\textwidth]{nasdaqRSI}
+	\caption{(NASDAQ) Relative Strength Index}
 	\centering
 \end{figure}
 
 \section{Implementation}
+The easiest way to describe implementation steps is to start from the most basic source files.
+In the \texttt{Analysis} notebook \texttt{utils.py} was imported. It contains definitions for loading the data from \texttt{.csv} files and changing data timeframe. To apply some basic indicators a separate module was created for the needs of this project. The module has definitions for indicators SMA, EMA, Momentum and RSI oscillator (\cite{Indicies}). These is enough to get working with the \texttt{Analysis} notebook and export datasets into csv train and test files.
+
 \section{Refinement}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
@@ -143,8 +166,9 @@ Rohit Sharma, \textit{Gaussian distribution}, \texttt{\href{https://medium.com/a
 %\bibitem{Khan}
 %\texttt{\href{https://www.khanacademy.org/economics-finance-domain/core-finance/stock-and-bonds}{khanacademy.com}}
 
-%\bibitem{Oscillators}
-%\texttt{\href{https://www.fxcm.com/uk/insights/learn-forex-oscillators-and-momentum-indicators/}{fxcm.com}}
+\bibitem{Indicies}
+Indicators definitions
+\texttt{\href{https://www.fxcm.com/uk/insights/learn-forex-oscillators-and-momentum-indicators/}{fxcm.com}}
 
 \bibitem{Yahoo}
 Yahoo! Finance
@@ -153,6 +177,14 @@ Yahoo! Finance
 \bibitem{HistData}
 HistData
 \texttt{\href{http://histdata.com}{histdata.com}}
+
+\bibitem{Torch}
+PyTorch
+\texttt{\href{https://pytorch.org/}{pytorch.org}}
+
+\bibitem{Plotly}
+Plotly
+\texttt{\href{https://plot.ly/javascript/}{plot.ly}}
 
 \end{thebibliography}
 
