@@ -48,7 +48,7 @@
                 Plotly.newPlot('chart', data, layout);
             }
             
-            function submitForm(oFormElement) {
+            function submitForm(sender) {
                 var xhr = new XMLHttpRequest();
                 xhr.onload = function() {
                     var result = xhr.responseText;
@@ -56,9 +56,9 @@
                     //plot();
                     document.getElementById('log').innerHTML = result;
                 }
-                xhr.open (oFormElement.method, oFormElement.action, true);
-                var review = document.getElementById('review');
-                xhr.send (review.value);
+                xhr.open(sender.method, sender.action, true);
+                var symbol = document.getElementById('symbol').value;
+                xhr.send(symbol);
                 return false;
             }
         </script>
@@ -73,7 +73,7 @@
                 <input id="symbol" value="EURUSD=X" />
                 <button type="submit" class="btn btn-default">Forecast</button>
             </form>
-            <div id="chart" style="width:80vw;height:50vh;"></div>
+            <div id="chart" style="width:80vw;height:90vh;"></div>
             <p id="log"></p>
         </div>
     </body>

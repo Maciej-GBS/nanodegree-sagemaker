@@ -23,6 +23,8 @@ class LSTMRegressor(torch.nn.Module):
     """
     def __init__(self, input_size, input_channels, c_filters, c_kernel_size, lstm_layers, lstm_hidden, dropout, output_size):
         super().__init__()
+        self.size = input_size
+        self.channels = input_channels
         # Each channel is a different column of our data
         # So input of 11 bars history has a shape of (N,C,L) = (len,batch,features) = (N,n_columns,11)
         c_out_channels = input_channels * c_filters
@@ -55,10 +57,8 @@ class LSTMRegressor(torch.nn.Module):
         # above to use denormalize function later.
         return dense_out
     
-model_info = None
 def model_fn(model_dir):
     """Load the PyTorch model from the `model_dir` directory."""
-    global model_info
     print("> Loading model...")
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

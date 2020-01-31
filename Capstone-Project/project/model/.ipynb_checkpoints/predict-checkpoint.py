@@ -9,7 +9,7 @@ import yfinance as yf
 
 from model import *
 
-def convert(data, meta, ema=0.03, sma=70, rsi=14):
+def convert(data, horizon, meta, ema=0.03, sma=70, rsi=14):
     # Get specific columns Open High Low Close
     data = data.loc[:,['Open','High','Low','Close']]
     # Apply indicators
@@ -19,7 +19,7 @@ def convert(data, meta, ema=0.03, sma=70, rsi=14):
     data = indicators.Momentum(data)
     data = indicators.RSI(data, period=rsi)
     # Return only meta channels
-    return torch.from_numpy(data.iloc[:, meta].values)
+    return torch.from_numpy(data.iloc[:, meta].values[-horizon:])
 
 def input_fn(serialized_input_data, content_type):
     """ Input should be text symbol to predict on (e.g. EURUSD) """
@@ -32,11 +32,12 @@ def input_fn(serialized_input_data, content_type):
     period = '6mo'
     sym = yf.Ticker(symbol)
     data = sym.history(period=period, interval=interval)
-    return convert(data, model_info['input_channels'])
+    return data
 
 def output_fn(prediction_output, accept):
     print("> Responding with forecast")
     d = {
+        'x':prediction_output[2].tolist(),
         'open':predcition_output[0,:,0].tolist(),
         'high':predcition_output[0,:,1].tolist(),
         'low':predcition_output[0,:,2].tolist(),
@@ -49,12 +50,13 @@ def predict_fn(input_data, model):
     print('> Inferring forecast for provided symbol')
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
-    # Expected size is (1, input_size, input_channels)
-    data = input_data[-model_info['input_size']:].unsqueeze(dim=0).to(device)
+    data = convert(input_data, model.size, model.channels)
+    # Expected size is (1, size, channels)
+    data = data.unsqueeze(dim=0).to(device)
 
     # Model into evaluation mode
     model.eval()
     with torch.no_grad():
         result = model(data)
         result = np.array(denormalize(result, data[:,:,3]))
-    return np.array([data, result])
+    return np.array([data, result, list(input_data.index)])
