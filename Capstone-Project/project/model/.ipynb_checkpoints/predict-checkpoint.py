@@ -9,17 +9,17 @@ import yfinance as yf
 
 from model import *
 
-def convert(data, interval, meta, ema=0.03, sma=70, rsi=14):
+def convert(data, meta, ema=0.03, sma=70, rsi=14):
     # Get specific columns Open High Low Close
     data = data.loc[:,['Open','High','Low','Close']]
     # Apply indicators
-    data = indicators.Gap(data, np.timedelta64(int(interval[:-1]),interval[-1]))
+    data = indicators.Gap(data, np.timedelta64(1,'D'))
     data = indicators.EMA(data, P=ema)
     data = indicators.SMA(data, N=sma)
     data = indicators.Momentum(data)
     data = indicators.RSI(data, period=rsi)
     # Return only meta channels
-    return data.iloc[:, meta]
+    return torch.from_numpy(data.iloc[:, meta].values[-10:])
 
 def input_fn(serialized_input_data, content_type):
     """ Input should be text symbol to predict on (e.g. EURUSD) """
@@ -28,11 +28,11 @@ def input_fn(serialized_input_data, content_type):
     print("> Received symbol information")
     
     sym_info = json.loads(serialized_input_data)
-    interval = sym_info['interval']
-    period = '1mo'
+    interval = '1d'
+    period = '6mo'
     sym = yf.Ticker(sym_info['symbol'])
     data = sym.history(period=period, interval=interval)
-    return convert(data, interval, model_info['input_channels'])
+    return convert(data, model_info['input_channels'])
 
 def output_fn(prediction_output, accept):
     print("> Responding with forecast")
@@ -43,7 +43,7 @@ def predict_fn(input_data, model):
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
     # TODO: make this work
-    data = convert(input_data).to(device)
+    data = input_data.to(device)
 
     # Model into evaluation mode
     model.eval()

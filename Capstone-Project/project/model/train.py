@@ -35,7 +35,7 @@ def train(model, outputs, train_loader, use_cols, epochs, optimizer, loss_fn, de
             batch_Y = batch[:,-outputs:].to(device)
             
             raw_y = model(batch_X[:,:,use_cols])
-            y = raw_y + batch_X[:,-1,3].reshape(raw_y.shape[0],1).repeat(1,outputs)
+            y = denormalize(raw_y, batch_X[:,:,3])
             loss = loss_fn(y, batch_Y[:,:,3])
             loss.backward()
 
