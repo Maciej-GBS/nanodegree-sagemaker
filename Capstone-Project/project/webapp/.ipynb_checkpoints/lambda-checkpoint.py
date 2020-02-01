@@ -1,17 +1,18 @@
 import json
 import boto3
+import os
 
 def lambda_handler(event, context):
     runtime = boto3.Session().client('sagemaker-runtime')
 
-    response = runtime.invoke_endpoint(EndpointName = '**ENDPOINT NAME**',
+    endpoint = os.environ['PREDICTOR']
+    response = runtime.invoke_endpoint(EndpointName = "**ENDPOINT**",
                                        ContentType = 'text/plain',
                                        Body = event['body'])
-
-    result = json.loads(response['Body'].read())
 
     return {
         'statusCode' : 200,
         'headers' : { 'Content-Type' : 'application/json', 'Access-Control-Allow-Origin' : '*' },
-        'body' : result
+        'body' : response['Body']
     }
+

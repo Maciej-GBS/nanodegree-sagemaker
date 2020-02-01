@@ -38,10 +38,10 @@ def output_fn(prediction_output, accept):
     print("> Responding with forecast")
     d = {
         'x':prediction_output[2].tolist(),
-        'open':prediction_output[0,:,0].tolist(),
-        'high':prediction_output[0,:,1].tolist(),
-        'low':prediction_output[0,:,2].tolist(),
-        'close':prediction_output[0,:,3].tolist(),
+        'open':prediction_output[0][:,0].tolist(),
+        'high':prediction_output[0][:,1].tolist(),
+        'low':prediction_output[0][:,2].tolist(),
+        'close':prediction_output[0][:,3].tolist(),
         'pred':prediction_output[1].tolist(),
         }
     return json.dumps(d)
@@ -59,4 +59,4 @@ def predict_fn(input_data, model):
     with torch.no_grad():
         result = model(data)
         result = np.array(denormalize(result, data[:,:,3]))
-    return np.array([data, result, np.array(input_data.index)])
+    return np.array([data.squeeze(), result, np.array(input_data.index)])
