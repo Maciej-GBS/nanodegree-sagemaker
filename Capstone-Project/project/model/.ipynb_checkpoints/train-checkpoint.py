@@ -13,7 +13,7 @@ from model import *
 def _get_data_loader(batch_size, sliding_window, training_dir, file):
     train_data = pd.read_csv(os.path.join(training_dir, file), index_col=0, header=None)
     train_ds = SlidingWindowDataset(train_data.values, sliding_window)
-    return torch.utils.data.DataLoader(train_ds, batch_size=batch_size)
+    return torch.utils.data.DataLoader(train_ds, batch_size=batch_size, shuffle=True)
 
 def _get_train_data_loader(batch_size, sliding_window, training_dir):
     return _get_data_loader(batch_size, sliding_window, training_dir, 'train.csv')
