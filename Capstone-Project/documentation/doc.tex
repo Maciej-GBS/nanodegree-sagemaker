@@ -82,6 +82,11 @@ Market data actually is normally distributed but only on short samples and only 
 \section{Algorithms \& Techniques}
 The regressor uses Long Short Term Memory, which is one of the best currently known methods for working with timeseries data and any other position dependent information sets (e.g. words in a sentence). This model is based on PyTorch framework (\cite{Torch}).
 
+\begin{figure}[h]
+	\centering
+	\includegraphics[scale=1.4]{arch}
+	\caption{Modules sequence}
+\end{figure}
 Architecture of the model is 1-D Batch Normalization over the input split into channels, which are the columns of our data making predictor independent of the input scale. Then 1-D Convolution is applied, which allows to extract more information from the input. Combination of these methods allow the model to work with both datasets in the state as they are -- no scaling is required during data preprocessing.
 
 Normalized input is flattened finally passed to fully connected layer, which outputs predictions for $N$ future Close price values. Output is in normalized space though and a function to denormalize output into correct value is required (\ref{denorm}).
@@ -144,6 +149,7 @@ The Webapp is just one HTML file that uses javascript to send requests to the La
 
 \section{Refinement}
 Currently, the predictor is fixed to use the output size as the horizon of predictions. This means that output size of $N$ will make the model train to predict $N$ future values. This is just implementation because in this project there were no models trained with output size larger than 1.
+% TODO
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -164,11 +170,13 @@ EURUSD looked similarly, after 30 epochs started overfitting. Final loss was 0.0
 	\includegraphics[scale=2.1]{eurusdVs}
 	\caption{Blue: actual close, red: MA prediction, green: LSTM predicition. Error for EURUSD was around 1.13x the error of benchmark.}
 \end{figure}
+% TODO
 
 \section{Justification}
 Trained model did not perform better than our benchmark. It is caused by the overfitting that was not avoided here (less epochs would do) and also because of the specific architecture that makes it difficult to denormalize outputs.
 
 If some more research was made it can prove possible to create a model that performs better than trivial predictors.
+% TODO
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 

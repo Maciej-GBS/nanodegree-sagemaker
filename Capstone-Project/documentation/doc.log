@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2019.11.26)  1 FEB 2020 03:12
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2019.11.26)  1 FEB 2020 19:55
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -719,82 +719,94 @@ File: ./img/eurusdHist.jpg Graphic file (type jpg)
 Package pdftex.def Info: ./img/eurusdHist.jpg  used on input line 78.
 (pdftex.def)             Requested size: 372.0445pt x 192.38196pt.
  [3 <./img/nasdaqHist.jpg> <./img/eurusdHist.jpg>]
-<./img/ma.png, id=113, 726.715pt x 271.0125pt>
+<./img/arch.jpg, id=110, 123.3408pt x 123.3408pt>
+File: ./img/arch.jpg Graphic file (type jpg)
+<use ./img/arch.jpg>
+Package pdftex.def Info: ./img/arch.jpg  used on input line 87.
+(pdftex.def)             Requested size: 172.67592pt x 172.67592pt.
+<./img/ma.png, id=114, 726.715pt x 271.0125pt>
 File: ./img/ma.png Graphic file (type png)
 <use ./img/ma.png>
-Package pdftex.def Info: ./img/ma.png  used on input line 99.
+Package pdftex.def Info: ./img/ma.png  used on input line 104.
 (pdftex.def)             Requested size: 363.3566pt x 135.5059pt.
- [4 <./img/ma.png>]
-<./img/nasdaqClose.jpg, id=123, 170.7981pt x 70.5837pt>
-File: ./img/nasdaqClose.jpg Graphic file (type jpg)
-<use ./img/nasdaqClose.jpg>
-Package pdftex.def Info: ./img/nasdaqClose.jpg  used on input line 119.
-(pdftex.def)             Requested size: 455.2867pt x 170.72899pt.
-<./img/nasdaqMom.jpg, id=124, 170.3163pt x 68.8974pt>
-File: ./img/nasdaqMom.jpg Graphic file (type jpg)
-<use ./img/nasdaqMom.jpg>
-Package pdftex.def Info: ./img/nasdaqMom.jpg  used on input line 124.
-(pdftex.def)             Requested size: 455.25243pt x 113.82085pt.
-<./img/nasdaqRSI.jpg, id=125, 168.63pt x 67.6929pt>
-File: ./img/nasdaqRSI.jpg Graphic file (type jpg)
-<use ./img/nasdaqRSI.jpg>
-Package pdftex.def Info: ./img/nasdaqRSI.jpg  used on input line 129.
-(pdftex.def)             Requested size: 455.2556pt x 113.81935pt.
 
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
-[5 <./img/nasdaqClose.jpg> <./img/nasdaqMom.jpg>]
-LaTeX Font Info:    Try loading font information for T1+cmtt on input line 136.
+[4 <./img/arch.jpg>]
+<./img/nasdaqClose.jpg, id=124, 170.7981pt x 70.5837pt>
+File: ./img/nasdaqClose.jpg Graphic file (type jpg)
+<use ./img/nasdaqClose.jpg>
+Package pdftex.def Info: ./img/nasdaqClose.jpg  used on input line 124.
+(pdftex.def)             Requested size: 455.2867pt x 170.72899pt.
+<./img/nasdaqMom.jpg, id=125, 170.3163pt x 68.8974pt>
+File: ./img/nasdaqMom.jpg Graphic file (type jpg)
+<use ./img/nasdaqMom.jpg>
+Package pdftex.def Info: ./img/nasdaqMom.jpg  used on input line 129.
+(pdftex.def)             Requested size: 455.25243pt x 113.82085pt.
+
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+<./img/nasdaqRSI.jpg, id=126, 168.63pt x 67.6929pt>
+File: ./img/nasdaqRSI.jpg Graphic file (type jpg)
+<use ./img/nasdaqRSI.jpg>
+Package pdftex.def Info: ./img/nasdaqRSI.jpg  used on input line 134.
+(pdftex.def)             Requested size: 455.2556pt x 113.81935pt.
+
+LaTeX Warning: `h' float specifier changed to `ht'.
+
+[5 <./img/ma.png> <./img/nasdaqClose.jpg>]
+LaTeX Font Info:    Try loading font information for T1+cmtt on input line 141.
 
 
 (/usr/share/texlive/texmf-dist/tex/latex/base/t1cmtt.fd
 File: t1cmtt.fd 2014/09/29 v2.5h Standard LaTeX font definitions
-) [6 <./img/nasdaqRSI.jpg>]
-<./img/nasdaqVs.jpg, id=142, 171.7617pt x 112.5003pt>
+) [6 <./img/nasdaqMom.jpg> <./img/nasdaqRSI.jpg>]
+<./img/nasdaqVs.jpg, id=144, 171.7617pt x 112.5003pt>
 File: ./img/nasdaqVs.jpg Graphic file (type jpg)
 <use ./img/nasdaqVs.jpg>
-Package pdftex.def Info: ./img/nasdaqVs.jpg  used on input line 158.
+Package pdftex.def Info: ./img/nasdaqVs.jpg  used on input line 164.
 (pdftex.def)             Requested size: 360.69972pt x 236.25072pt.
-<./img/eurusdVs.jpg, id=143, 173.448pt x 111.7776pt>
+<./img/eurusdVs.jpg, id=145, 173.448pt x 111.7776pt>
 File: ./img/eurusdVs.jpg Graphic file (type jpg)
 <use ./img/eurusdVs.jpg>
-Package pdftex.def Info: ./img/eurusdVs.jpg  used on input line 164.
+Package pdftex.def Info: ./img/eurusdVs.jpg  used on input line 170.
 (pdftex.def)             Requested size: 364.24095pt x 234.73303pt.
 
 
 LaTeX Warning: `h' float specifier changed to `ht'.
 
 [7 <./img/nasdaqVs.jpg>] [8 <./img/eurusdVs.jpg>]
-Underfull \hbox (badness 3838) in paragraph at lines 197--199
+Underfull \hbox (badness 3838) in paragraph at lines 205--207
 []\T1/cmr/m/n/12 Aishwarya Singh, \T1/cmr/m/it/12 Stock Prices Pre-dic-tion Us-
 ing ML and DL Tech-niques\T1/cmr/m/n/12 ,
  []
 
 
-Underfull \hbox (badness 2443) in paragraph at lines 201--202
+Underfull \hbox (badness 2443) in paragraph at lines 209--210
 []\T1/cmr/m/n/12 Yibin Ng, \T1/cmr/m/it/12 Ma-chine Learn-ing Tech-niques ap-pl
 ied to Stock Price Pre-dic-tion\T1/cmr/m/n/12 ,
  []
 
-Package atveryend Info: Empty hook `BeforeClearDocument' on input line 234.
+Package atveryend Info: Empty hook `BeforeClearDocument' on input line 242.
 [9]
-Package atveryend Info: Empty hook `AfterLastShipout' on input line 234.
+Package atveryend Info: Empty hook `AfterLastShipout' on input line 242.
  (./doc.aux)
-Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 234.
-Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 234.
+Package atveryend Info: Executing hook `AtVeryEndDocument' on input line 242.
+Package atveryend Info: Executing hook `AtEndAfterFileList' on input line 242.
 Package rerunfilecheck Info: File `doc.out' has not changed.
 (rerunfilecheck)             Checksum: EA8D579C6ED217A21C0DF406060917EC;866.
-Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 234.
+Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 242.
  ) 
 Here is how much of TeX's memory you used:
- 7201 strings out of 494888
- 101162 string characters out of 6179865
+ 7207 strings out of 494888
+ 101254 string characters out of 6179865
  193960 words of memory out of 5000000
- 10369 multiletter control sequences out of 15000+600000
+ 10373 multiletter control sequences out of 15000+600000
  14034 words of font info for 39 fonts, out of 8000000 for 9000
  34 hyphenation exceptions out of 8191
- 28i,7n,28p,609b,356s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 28i,7n,28p,609b,380s stack positions out of 5000i,500n,10000p,200000b,80000s
  </home/gbs/.texlive2017/texmf-var/fonts/pk/ljfour/jknappen/ec/ecti1200.600pk
 > </home/gbs/.texlive2017/texmf-var/fonts/pk/ljfour/jknappen/ec/ectt1200.600pk>
  </home/gbs/.texlive2017/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm1200.600pk> 
@@ -806,10 +818,10 @@ ome/gbs/.texlive2017/texmf-var/fonts/pk/ljfour/jknappen/ec/ecrm2074.600pk></usr
 /texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/share/texliv
 e/texmf-dist/fonts/type1/public/amsfonts/cm/cmr8.pfb></usr/share/texlive/texmf-
 dist/fonts/type1/public/amsfonts/cm/cmsy10.pfb>
-Output written on doc.pdf (9 pages, 681862 bytes).
+Output written on doc.pdf (9 pages, 729498 bytes).
 PDF statistics:
- 466 PDF objects out of 1000 (max. 8388607)
- 197 compressed objects within 2 object streams
- 50 named destinations out of 1000 (max. 500000)
- 174 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 468 PDF objects out of 1000 (max. 8388607)
+ 198 compressed objects within 2 object streams
+ 51 named destinations out of 1000 (max. 500000)
+ 179 words of extra memory for PDF output out of 10000 (max. 10000000)
 
