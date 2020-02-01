@@ -37,12 +37,11 @@ def input_fn(serialized_input_data, content_type):
 def output_fn(prediction_output, accept):
     print("> Responding with forecast")
     d = {
-        'x':prediction_output[2].tolist(),
+        'x':prediction_output[1].tolist(),
         'open':prediction_output[0][:,0].tolist(),
         'high':prediction_output[0][:,1].tolist(),
         'low':prediction_output[0][:,2].tolist(),
         'close':prediction_output[0][:,3].tolist(),
-        'pred':prediction_output[1].tolist(),
         }
     return json.dumps(d)
 
@@ -50,13 +49,18 @@ def predict_fn(input_data, model):
     print('> Inferring forecast for provided symbol')
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
-    data = convert(input_data, model.size, model.channels)
+    market = convert(input_data, model.size, model.channels)
     # Expected size is (1, size, channels)
-    data = data.unsqueeze(dim=0).to(device)
+    data = market.unsqueeze(dim=0).to(device)
 
     # Model into evaluation mode
     model.eval()
     with torch.no_grad():
         result = model(data)
         result = np.array(denormalize(result, data[:,:,3]))
-    return np.array([data.squeeze(), result, np.array(input_data.index)])
+        
+    x = np.array(input_data.index)
+    x = np.append(x, x[-1] + np.timedelta64(1,'D'))
+    market = market.numpy()
+    result = np.append(market[:,:4], [[result]*4], axis=0)
+    return np.array([result, x])

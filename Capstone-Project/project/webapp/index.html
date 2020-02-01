@@ -51,9 +51,8 @@
             function submitForm(sender) {
                 var xhr = new XMLHttpRequest();
                 xhr.onload = function() {
-                    var result = xhr.responseText;
-                    // TODO: process response json
-                    //plot();
+                    var result = JSON.parse(xhr.responseText);
+                    plot(result.x, result.open, result.high, result.low, result.close);
                     document.getElementById('log').innerHTML = result;
                 }
                 xhr.open(sender.method, sender.action, true);
