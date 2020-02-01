@@ -87,7 +87,7 @@ Architecture of the model is 1-D Batch Normalization over the input split into c
 Normalized input is flattened finally passed to fully connected layer, which outputs predictions for $N$ future Close price values. Output is in normalized space though and a function to denormalize output into correct value is required (\ref{denorm}).
 \begin{equation}
 \label{denorm}
-prediction = std(input[Close]) * output + mean(input[Close])
+prediction = std(input[Close]) * output + input[Close].last
 \end{equation}
 
 Web application is an HTML document using javascript to retrieve forecasts on demand. User provides any Yahoo symbol as a string and receives forecast for it as a json response. Received data is plotted using Plotly \cite{Plotly}.
@@ -115,19 +115,19 @@ Instead of modifying the data it is possible to calculate some indicators knowin
 \end{itemize}
 
 \begin{figure}[h]
+	\centering
 	\includegraphics[height=6cm,width=\textwidth]{nasdaqClose}
 	\caption{(NASDAQ) Close price (blue) with EMA (red) and SMA (green) indicators}
-	\centering
 \end{figure}
 \begin{figure}[h]
+	\centering
 	\includegraphics[height=4cm,width=\textwidth]{nasdaqMom}
 	\caption{(NASDAQ) Momentum}
-	\centering
 \end{figure}
 \begin{figure}[h]
+	\centering
 	\includegraphics[height=4cm,width=\textwidth]{nasdaqRSI}
 	\caption{(NASDAQ) Relative Strength Index}
-	\centering
 \end{figure}
 
 \section{Implementation}
@@ -145,19 +145,36 @@ The Webapp is just one HTML file that uses javascript to send requests to the La
 \section{Refinement}
 Currently, the predictor is fixed to use the output size as the horizon of predictions. This means that output size of $N$ will make the model train to predict $N$ future values. This is just implementation because in this project there were no models trained with output size larger than 1.
 
-Model was trained with 40 epochs on NASDAQ first and EURUSD second. The overall MSE loss (summed) for NASDAQ was: 350285 (train) / 963709 (test) and for EURUSD: 0.0028569 (train) / 0.0018057 (test).
-
 %%%%%%%%%%%%%%%%%%%%%%%%%
 
 \part{Results}
 \section{Model Evaluation and Validation}
+After 100 epochs on NASDAQ the loss reached 35382 (train) / 850213 (test), but it was greatly overfitted, because since epoch 30 the test loss was increasing.
+
+EURUSD looked similarly, after 30 epochs started overfitting. Final loss was 0.000365 (train) / 0.001459 (test).
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[scale=2.2]{nasdaqVs}
+	\caption{Blue: actual close, red: MA prediction, green: LSTM predicition. Error for NASDAQ was almost 18x the error of benchmark.}
+\end{figure}
+
+\begin{figure}[h]
+	\centering
+	\includegraphics[scale=2.2]{eurusdVs}
+	\caption{Blue: actual close, red: MA prediction, green: LSTM predicition. Error for EURUSD was around 8x the error of benchmark.}
+\end{figure}
+
 \section{Justification}
+Hello
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 
 \part{Conclusion}
 \section{Reflection}
-I guess that efficient-market hypothesis has beaten me once again.
+I guess that efficient-market hypothesis has beaten me once again. That is the biggest challenge of this project, forecasting future market price is not an easy task and can cause headaches.
+
+During development of this project I have run into many problems according the predictor architecture. I could not decide on the best way to deconvolve / denormalize the single value output, solution described above (\ref{denorm}) proved to work with best accuracy. I wanted to avoid scaling the dataset for all costs, because that is a common approach and instead allow the model to do the normalizing over input itself.
 
 \section{Further Improvements}
 Here the same model was trained on both datasets, which did not prove to provide any better accuracy in forecasting.
