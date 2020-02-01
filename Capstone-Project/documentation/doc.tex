@@ -155,18 +155,20 @@ EURUSD looked similarly, after 30 epochs started overfitting. Final loss was 0.0
 
 \begin{figure}[h]
 	\centering
-	\includegraphics[scale=2.2]{nasdaqVs}
-	\caption{Blue: actual close, red: MA prediction, green: LSTM predicition. Error for NASDAQ was almost 18x the error of benchmark.}
+	\includegraphics[scale=2.1]{nasdaqVs}
+	\caption{Blue: actual close, red: MA prediction, green: LSTM predicition. Error for NASDAQ was 6.24x the error of benchmark.}
 \end{figure}
 
 \begin{figure}[h]
 	\centering
-	\includegraphics[scale=2.2]{eurusdVs}
-	\caption{Blue: actual close, red: MA prediction, green: LSTM predicition. Error for EURUSD was around 8x the error of benchmark.}
+	\includegraphics[scale=2.1]{eurusdVs}
+	\caption{Blue: actual close, red: MA prediction, green: LSTM predicition. Error for EURUSD was around 1.13x the error of benchmark.}
 \end{figure}
 
 \section{Justification}
-Hello
+Trained model did not perform better than our benchmark. It is caused by the overfitting that was not avoided here (less epochs would do) and also because of the specific architecture that makes it difficult to denormalize outputs.
+
+If some more research was made it can prove possible to create a model that performs better than trivial predictors.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -174,11 +176,11 @@ Hello
 \section{Reflection}
 I guess that efficient-market hypothesis has beaten me once again. That is the biggest challenge of this project, forecasting future market price is not an easy task and can cause headaches.
 
-During development of this project I have run into many problems according the predictor architecture. I could not decide on the best way to deconvolve / denormalize the single value output, solution described above (\ref{denorm}) proved to work with best accuracy. I wanted to avoid scaling the dataset for all costs, because that is a common approach and instead allow the model to do the normalizing over input itself.
+During development of this project I have run into many problems according the predictor architecture. I could not decide on the best way to deconvolve / denormalize the single value output, solution described above (\ref{denorm}) proved to work with best accuracy, but probably it is not the perfect solution. I wanted to avoid scaling the dataset for all costs, because that is a common approach and instead allow the model to do the normalizing over input itself.
 
 \section{Further Improvements}
-Here the same model was trained on both datasets, which did not prove to provide any better accuracy in forecasting.
-It may be better to train separate model for each symbol.
+Here the same model was trained on both datasets, which did not provide any better accuracy in forecasting.
+It is easier to train separate model for each symbol.
 
 In this work the datasets had combined length of 2250. More data should improve the model.
 
