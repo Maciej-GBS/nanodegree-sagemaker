@@ -164,28 +164,38 @@ These are all important complications, that could be refined.
 
 \part{Results}
 \section{Model Evaluation and Validation}
-After 100 epochs on NASDAQ the loss reached 35382 (train) / 850213 (test), but it was greatly overfitted, because since epoch 30 the test loss was increasing.
-
-EURUSD looked similarly, after 30 epochs started overfitting. Final loss was 0.000365 (train) / 0.001459 (test).
-
 \begin{figure}[h]
+	\label{vsnasdaq}
 	\centering
-	\includegraphics[scale=2.1]{nasdaqVs}
-	\caption{Blue: actual close, red: MA prediction, green: LSTM predicition. Error for NASDAQ was 6.24x the error of benchmark.}
+	\includegraphics[scale=2.5]{nasdaqVs}
+	\caption{NASDAQ. Blue: actual close, red: MA prediction, green: LSTM predicition. Quality of predictions is clearly worse than benchmark.}
 \end{figure}
 
 \begin{figure}[h]
+	\label{vseurusd}
 	\centering
-	\includegraphics[scale=2.1]{eurusdVs}
-	\caption{Blue: actual close, red: MA prediction, green: LSTM predicition. Error for EURUSD was around 1.13x the error of benchmark.}
+	\includegraphics[scale=2.5]{eurusdVs}
+	\caption{EURUSD. Blue: actual close, red: MA prediction, green: LSTM predicition. By this chart, it is difficult to compare quality of presented solutions.}
 \end{figure}
-% TODO
+
+LSTM model was trained with 30 epochs on NASDAQ and afterwards 30 epochs on EURUSD. Further training results in overfitting which drastically reduces final performance. Final loss was calculated with MSE (\ref{MSE}) formula on the test data for both symbols. The results are shown in the table \ref{loss}.
+\begin{table}
+	\label{loss}
+	\centering
+	\begin{tabular}{l|l|l|l}
+		Symbol & Model loss & MA loss  & Loss ratio \\ \hline
+		NASDAQ & 1 757 468  & 711 753  & 2.469      \\
+		EURUSD & 0.000843   & 0.001069 & 0.789
+	\end{tabular}
+	\caption{Test data MSE loss comparison}
+\end{table}
 
 \section{Justification}
-Trained model did not perform better than our benchmark. It is caused by the overfitting that was not avoided here (less epochs would do) and also because of the specific architecture that makes it difficult to denormalize outputs.
+LSTM model has better accuracy over the MA benchmark on the EURUSD dataset and worse on the NASDAQ. This is probably caused by the fact that first it was trained over the NASDAQ and later EURUSD resulting in the model "forgetting" discovered patterns.
 
-If some more research was made it can prove possible to create a model that performs better than trivial predictors.
-% TODO
+It is possible to create a model that makes forecasts with higher accuracy than the benchmark model. However, this is nontrivial task and can easily overfit.
+
+The forecast quality may also reduce over time, especially when a small dataset was used. The predictor is likely to out-date soon.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -200,6 +210,7 @@ Here the same model was trained on both datasets, which did not provide any bett
 It is easier to train separate model for each symbol.
 
 In this work the datasets had combined length of 2250. More data should improve the model.
+Also, in this work I attempted to use the same model for forecasting both symbols, but it was trained on these symbols one after another. Training on both datasets at the same time would most likely result in better accuracy overall.
 
 Predicting High and Low instead may greatly improve usefulness of the forecasts. It is very difficult to accurately predict a price, but a range can be predicted with a higher certainty.
 
