@@ -5,7 +5,7 @@ import torch.utils.data
 
 def denormalize(y, close):
     """ Denormalize output of Regressor. Requires Close (predicted) input channel. """
-    mean = torch.mean(close, dim=1).reshape(y.shape[0],1).repeat(1,y.shape[1])
+    mean = close[:,-1].reshape(y.shape[0],1).repeat(1,y.shape[1])
     std = torch.std(close, dim=1).reshape(y.shape[0],1).repeat(1,y.shape[1])
     return std*y + mean
     
