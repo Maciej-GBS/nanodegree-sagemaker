@@ -149,7 +149,16 @@ The Webapp is just one HTML file that uses javascript to send requests to the La
 
 \section{Refinement}
 Currently, the predictor is fixed to use the output size as the horizon of predictions. This means that output size of $N$ will make the model train to predict $N$ future values. This is just implementation because in this project there were no models trained with output size larger than 1.
-% TODO
+
+Denormalization is the weakest point of this implementation. Because the model accepts custom input channels, I had to move the function outside of model forward process. This forces the user to apply the function later on the output received from predictor.
+
+Training process expects \texttt{train.csv} and \texttt{test.csv} files inside train directory passed as argument.
+On each array from these files a sliding window is applied, which is a limiting factor in constructing more advanced datasets -- it has to be one symbol with continuous entries.
+
+Another problem is AWS specific. Once the model is deployed it requires \texttt{yfinance} module to work.
+To provide it manual clone is performed in the \texttt{WebApp} notebook into the source dir that AWS preserves in deployment environment.
+
+These are all important complications, that could be refined.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%
 
